@@ -1,0 +1,225 @@
+*{
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
+}
+body{
+    background-color: rgb(31, 29, 29);
+    color: white;
+    height: 100%;
+    width: 100%;
+}
+/* For desktop: */
+.col-1 {width: 8.33%;}
+.col-2 {width: 16.66%;}
+.col-3 {width: 25%;}
+.col-4 {width: 33.33%;}
+.col-5 {width: 41.66%;}
+.col-6 {width: 50%;}
+.col-7 {width: 58.33%;}
+.col-8 {width: 66.66%;}
+.col-9 {width: 75%;}
+.col-10 {width: 83.33%;}
+.col-11 {width: 91.66%;}
+.col-12 {width: 100%;}
+
+@media only screen and (max-width: 768px) {
+  [class*="col-"] {
+    width: 100%;
+  }
+}
+
+/* index.html */
+/* navbar */
+nav{
+    overflow: hidden;
+    border-left: 6px solid white;
+    border-right: 6px solid white;
+    border-radius: 3px;
+}
+.navbar-nav li{
+    border-left: 4px solid white;
+    border-radius: 5%;
+}
+/* main body*/
+.main-container{
+    padding-top: 1%;
+}
+.function-keys{
+    float: right;
+    text-align: center;
+    position: relative;
+    top: 20%;
+    right: 1%;
+    padding-top: 18%;
+    padding-bottom: 10%;
+    padding-left: 8%;
+    padding-right: 4%;
+    font-size: 140%;
+}
+.function-keys a{
+    font-size: 140%;
+    padding: 2%;
+    color: #baf026;
+    text-align: center;
+    text-decoration: none;
+}
+.function-keys a:hover{
+    color: aqua;
+}
+.internal img{
+    float: left;
+    position: absolute;
+    height: 80vh;
+    padding-top: 10vh;
+    padding-left:10vh;
+}
+
+/* register.html */
+.d-flex{
+    background-image: url("bg-reg.png");
+    overflow: hidden;
+    width: 100%;
+    min-height: 100vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.reg-container{
+    top: 13%;
+    right: 30%;
+    left: 40%;
+    margin: 1%;
+    max-width: 35%;
+    padding: 1%;
+    border-radius: 3%;
+    background-color: white;
+    color: black;
+}
+.reg-form h1{
+    color: blueviolet;
+}
+.reg-form p{
+    color: red;
+}
+input[type=text], input[type=password]{
+    width: 100%;
+    padding: 1%;
+    margin: 1% 0 2% 0;
+    border: none;
+    border-radius: 5px;
+    background: #f1f1f1;
+}
+input[type=text]:focus, input[type=password]:focus{
+    background-color: #ddd;
+    outline: none;
+}
+
+.reg-form button{
+    margin-top: 1%;
+    margin-left: 25%;
+}
+.rgstrbttn{
+    background-color: #04AA6D;
+    color: white;
+    padding: 2% 5%;
+    border: none;
+    cursor: pointer;
+    width: 50%;
+    opacity: 0.9;
+}
+.rgstrbttn:hover{
+    opacity: 1;
+    background-color: #0fa36d;
+}
+.login p{
+    padding-left: 20%;
+}
+
+/* login.html */
+.d-flex{
+    background-image: url("bg-reg.png");
+    overflow: hidden;
+    width: 100%;
+    min-height: 100vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.login-container{
+    top: 13%;
+    right: 30%;
+    left: 40%;
+    margin: 1%;
+    max-width: 35%;
+    padding: 1%;
+    border-radius: 3%;
+    background-color: white;
+    color: black;
+}
+.login-form h1{
+    color: blueviolet;
+}
+.login-form p{
+    color: red;
+}
+input[type=text], input[type=password]{
+    width: 100%;
+    padding: 1%;
+    margin: 1% 0 2% 0;
+    border: none;
+    border-radius: 5px;
+    background: #f1f1f1;
+}
+input[type=text]:focus, input[type=password]:focus{
+    background-color: #ddd;
+    outline: none;
+}
+
+.login-form button{
+    margin-top: 1%;
+    margin-left: 25%;
+}
+.loginbttn{
+    background-color: #04AA6D;
+    color: white;
+    padding: 2% 5%;
+    border: none;
+    cursor: pointer;
+    width: 50%;
+    opacity: 0.9;
+}
+.loginbttn:hover{
+    opacity: 1;
+    background-color: #0fa36d;
+}
+.rgstr p{
+    padding-left: 20%;
+}
+
+/* clientdash.html */
+.client-block{
+    display: block;
+    position: absolute;
+    width: 80%;
+    height: 100%;
+    margin: 2% 10%;
+    border-radius: 3%;
+    background: aqua;
+}
+.client-header{
+    position: relative;
+    display: inline-block;
+    width: 90%;
+    height: 30%;
+    margin: 2% 5%;
+    padding: 2%;
+    border-radius: 10px;
+    background: whitesmoke;
+    color: black;
+    font-size: 100%;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.block-header pre{
+    float: left;
+}

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <form action="/user">
+        <a class="nav-link" ><button type="submit">Back to Dashboard</button></a>
+      </form>
+
+
+    <h1>Update Profile</h1>
+
+
+    <form id="updateProfile" action = "/updateProfile" method="POST" enctype="multipart/form-data">
+        <div>
+            <label for="name">username</label>
+            <input type="text" id = "username" name="username" value="<%= user.name %>" readonly>
+        </div>
+
+        <!-- <img src="./bg-reg.png" alt="User profile" width="100" height="150"> -->
+
+        <div>
+            <input type="file" id="myFile" name="filename" required>
+        </div>
+
+        
+        <div>
+            <label for="email">Email</label>
+            <input type="text" id = "email" name="email" value="<%= user.email %>" readonly>
+        </div>
+        <div>
+            <label for="name">Full name</label>
+            <input type="text" id = "name" name="name" value="<%= user.fullname %>">
+        </div>
+        <div>
+            <label for="phone">phone</label>
+            <input type="text" id = "phone" name="phone" value="<%= user.phone %>" >
+        </div>
+        <div>
+            <label for="age">age</label>
+            <input type="etext" id = "age" name="age" value="<%= user.age %>" >
+        </div>
+        <div>
+            <label for="weight">weight</label>
+            <input type="text" id = "weight" name="weight" value="<%= user.weight %>">
+        </div>
+        <div>
+            <label for="height">height</label>
+            <input type="text" id = "height" name="height" value="<%= user.height %>">
+        </div>
+        <div>
+            <label for="Specify">Describe your pain: </label>
+            <input type="text" id = "Specify" name="Specify" value="<%= user.Specify %>">
+        </div>
+        <div>
+            <p>Please select gender:</p>
+            <input type="radio" id="male" name="gender" value="male" checked
+            <%if(user.gender === "male"){%>
+                <%="checked"%>
+            <%}%>
+            >
+            <label for="male">male</label><br>
+            <input type="radio" id="female" name="gender" value="female"
+            <%if(user.gender === "female"){%>
+                <%="checked"%>
+            <%}%>
+            >
+            <label for="female">female</label><br>
+        </div>
+        <!-- <div>
+            <p>Please select region of pain:</p>
+            <label>
+                neck
+                <input type="checkbox" name="checkArr" value="neck">
+              </label>
+              <label>
+                right sholder
+                <input type="checkbox" name="checkArr" value="right sholder">
+              </label>
+              <label>
+                left sholder
+                <input type="checkbox" name="checkArr" value="left sholder">
+              </label>
+              <label>
+                back
+                <input type="checkbox" name="checkArr" value="back">
+              </label>
+        </div> -->
+
+        
+        <div>
+            <label for="neck_pain">Neck Pain: </label>
+            <input type="range" id="neck_pain" name="neck_pain" min="0" max="50" value="<%= user.pain_range.neck %>">
+        </div>
+
+        <div>
+            <label for="shoulder_pain">Shoulder Pain: </label>
+            <input type="range" id="shoulder_pain" name="shoulder_pain" min="0" max="50"  value="<%= user.pain_range.shoulder %>">
+        </div>
+
+        <div>
+            <label for="elbow_pain">Elbow Pain: </label>
+            <input type="range" id="elbow_pain" name="elbow_pain" min="0" max="50"  value="<%= user.pain_range.elbow %>">
+        </div>
+
+        <div>
+            <label for="back_pain">Back Pain: </label>
+            <input type="range" id="back_pain" name="back_pain" min="0" max="50"  value="<%= user.pain_range.back %>">
+        </div>
+
+        <div>
+            <label for="knee_pain">Knees Pain: </label>
+            <input type="range" id="knee_pain" name="knee_pain" min="0" max="50"  value="<%= user.pain_range.knee %>">
+        </div>
+
+        <div>
+            <label for="ankle_pain">Ankle Pain: </label>
+            <input type="range" id="ankle_pain" name="ankle_pain" min="0" max="50"  value="<%= user.pain_range.ankle %>">
+        </div>
+
+        
+            
+        <br>
+        <br>
+        <button type="submit">Update</button>
+    </form>
+    
+    
+
+</body>
+</html>
