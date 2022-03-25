@@ -12,6 +12,7 @@ const cookieParser = require("cookie-parser");
 const User = require("./model/user")
 const Profile = require("./model/profile")
 const mongoose = require("mongoose")
+const path = require("path")
 // mongoose.connect("mongodb://localhost:27017/login-db")
 mongoose.connect("mongodb+srv://testdb:testdb@cluster0.jh0j0.mongodb.net/physio?retryWrites=true&w=majority")
 
@@ -22,6 +23,7 @@ app.use(express.static(__dirname+'/uploads'))
 
 app.use(cookieParser());
 
+app.set('views', path.join(__dirname,'views'))
 app.set("view engine","ejs")
 app.use(express.urlencoded({ extended: true }))
 
