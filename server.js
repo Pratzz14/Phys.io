@@ -12,8 +12,8 @@ const cookieParser = require("cookie-parser");
 const User = require("./model/user")
 const Profile = require("./model/profile")
 const mongoose = require("mongoose")
-mongoose.connect("mongodb://localhost:27017/login-db")
-// mongoose.connect("mongodb+srv://testdb:testdb@cluster0.jh0j0.mongodb.net/physio?retryWrites=true&w=majority")
+// mongoose.connect("mongodb://localhost:27017/login-db")
+mongoose.connect("mongodb+srv://testdb:testdb@cluster0.jh0j0.mongodb.net/physio?retryWrites=true&w=majority")
 
 const { uploadFile, getFileStream } = require("./s3")
 
