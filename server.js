@@ -291,5 +291,9 @@ app.post('/updateProfile', upload.single('filename') , async (req,res)=>{
     // })
 })
 
+app.get('/physio-shoulder1',  (req, res) => {
+
+    res.render('test.ejs')
+  })
 
 app.listen(3000)
