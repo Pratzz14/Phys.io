@@ -291,9 +291,42 @@ app.post('/updateProfile', upload.single('filename') , async (req,res)=>{
     // })
 })
 
-app.get('/physio-shoulder1',  (req, res) => {
+app.get('/shoulder1',  (req, res) => {
 
     res.render('test.ejs')
   })
+
+var videos = {
+    "neck1":"https://www.youtube.com/watch?v=RuHEJs8Dibk",
+    "shoulder1":"https://www.youtube.com/watch?v=aliE1bEp9Nc",
+    "elbow1":"https://www.youtube.com/watch?v=Lf695_IJO8g",
+    "back1":"https://www.youtube.com/watch?v=Ip0S-HHQIoc",
+    "knee1":"https://www.youtube.com/watch?v=pOrc3zADC7k",
+    "ankle1":"https://www.youtube.com/watch?v=hEmLp6iQB7M"
+}
+
+app.get('/neck1',  (req, res) => {
+    res.render('exercise.ejs', {exercise: videos["neck1"],name:"Neck Exercise: 1"})    
+})
+
+app.get('/shoulder2',  (req, res) => {
+    res.render('exercise.ejs', {exercise: videos["shoulder1"],name:"Shoulder Exercise: 1"})    
+})
+
+app.get('/elbow1',  (req, res) => {
+    res.render('exercise.ejs', {exercise: videos["elbow1"],name:"Elbow Exercise: 1"})    
+})
+
+app.get('/back1',  (req, res) => {
+    res.render('exercise.ejs', {exercise: videos["back1"],name:"Back Exercise: 1"})    
+})
+
+app.get('/knee1',  (req, res) => {
+    res.render('exercise.ejs', {exercise: videos["knee1"],name:"Knee Exercise: 1"})    
+})
+
+app.get('/ankle1',  (req, res) => {
+    res.render('exercise.ejs', {exercise: videos["ankle1"],name:"Ankle Exercise: 1"})    
+})
 
 app.listen(3000)
