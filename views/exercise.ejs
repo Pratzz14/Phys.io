@@ -47,9 +47,25 @@
 
     <main>
 
-        <h1 style="color: aliceblue;"><%=name%></h1>
-        <iframe width="760" height="515" src=<%=exercise%> allowfullscreen></iframe>
-        
+      <br>
+    
+    <div class = "backtohome">
+
+        <form action="/user">
+            <button type="submit" class="btn btn-danger">◀Back to Dashboard</button>
+        </form>
+
+    </div>
+    <br>
+    <br>
+
+        <!-- <h1 style="color: aliceblue;"><%=name%></h1> -->
+        <center>
+
+          <iframe width="1020" height="530" src="<%=exercise%>" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+        </center>
+
 
     </main>
 

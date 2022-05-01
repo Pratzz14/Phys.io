@@ -297,12 +297,12 @@ app.get('/shoulder1',  (req, res) => {
   })
 
 var videos = {
-    "neck1":"https://www.youtube.com/watch?v=RuHEJs8Dibk",
-    "shoulder1":"https://www.youtube.com/watch?v=aliE1bEp9Nc",
-    "elbow1":"https://www.youtube.com/watch?v=Lf695_IJO8g",
-    "back1":"https://www.youtube.com/watch?v=Ip0S-HHQIoc",
-    "knee1":"https://www.youtube.com/watch?v=pOrc3zADC7k",
-    "ankle1":"https://www.youtube.com/watch?v=hEmLp6iQB7M"
+    "neck1":"https://www.youtube.com/embed/iwPsbH5yFc4",
+    "shoulder1":"https://www.youtube.com/embed/FnOq_VZm-nk",
+    "elbow1":"https://www.youtube.com/embed/Lf695_IJO8g",
+    "back1":"https://www.youtube.com/embed/Ip0S-HHQIoc",
+    "knee1":"https://www.youtube.com/embed/pOrc3zADC7k",
+    "ankle1":"https://www.youtube.com/embed/hEmLp6iQB7M"
 }
 
 app.get('/neck1',  (req, res) => {
