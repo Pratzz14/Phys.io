@@ -223,3 +223,19 @@ input[type=text]:focus, input[type=password]:focus{
 .block-header pre{
     float: left;
 }
+
+.formStuff{
+
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+input[type=range] {
+    width: 85%;
+  }
+
+.backtohome{
+    margin-left: 5%;
+}
+
+ 
