@@ -43,36 +43,33 @@
     </header>
     <main>
 
-      <div class="client-header">
-        <img src="def profile.jpg" alt="client image">
+      <div class="client-header1">
+        <img src="<%=user.profile_pic%>" alt="client image">
         <pre>
-Username: <%= user.name %>
-Email Id: <%= user.email %> 
-<%= user.fullname %>
-<%= user.phone %>
-<%= user.age %>
-<%= user.weight %>
-<%= user.height %>
-<%= user.Specify %>
-<%= user.gender %>   
+<h1>Hello there! <%= user.name%>
+<h5>Email Id: <%= user.email%>
+<h5>Fullname: <%= user.fullname%>
+<h5>Phone number: <%= user.phone %></h5>
 
-<a href="update-client.html">Update Profile</a>       
-        </pre>
+<h5>Age: <%= user.age %>
+<h5>Weight: <%= user.weight %>
+<h5>Height: <%= user.height %>
+<h5>Gender: <%= user.gender %>   
+</pre>
+
       </div>
+      <form action="/updateProfile">
+        <a class="nav-link" ><button type="submit" style="background-color: aqua;margin-left: 10%;"><h4><b>Update Profile</b></h4></button></a>
+      </form>  
 
-<form action="/updateProfile">
+<!-- <form action="/updateProfile">
   <a class="nav-link" ><button type="submit">Update Profile</button></a>
-</form>
+</form> -->
 
-      
 
-          <div class="client-container">
+          <!-- <div class="client-container"> -->
               <div class="client-block">
                   <div class="client-header">
-
-
-
-                  
 
               <h1 style="color: #ffffff;">Excercise with our monitoring: </h1>
               

@@ -244,3 +244,60 @@ input[type=range] {
 }
 
 /* yup */
+.client-container{
+    display: grid;
+    grid-gap: 4%;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: 7% 90% 3%;
+    padding: 3% 3%;
+    grid-template-areas: 
+    ". . h h h h h h h h . ."
+    "b b b b b b b b b b b b";
+}
+.client-header1{
+    grid-area: h;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: 100%;
+    grid-template-areas: 
+    "t t t t t d"
+    "t t t t t d";
+    background: #f1f1f1;
+    height: fit-content;
+    border-radius: 5%;
+    margin: 2% 10% 0.1%;
+    padding: 1% 2%;
+}
+.client-header1 pre{
+    grid-area: t;
+}
+.client-header1 a{
+    text-decoration: none;
+    /* padding: 1% 2%; */
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 100%;
+    color: #baf026;
+    /* background: blueviolet; */
+    /* border-radius: 5%; */
+}
+.client-header1 img{
+    grid-area: d;
+    border-radius: 50%;
+    height: 50vh;
+    float: right;
+    
+}
+.client-body{
+    grid-area: b;
+    background: #baf026;
+    /* margin: 3%; */
+    height: 10%;
+    border-radius: 6%;
+}
+@media screen and (max-width:840px) {
+    .client-header1{
+        grid-template-areas: 
+        "d d d d d d"
+        "t t t t t t";
+    }
+}
