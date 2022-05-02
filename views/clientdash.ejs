@@ -42,12 +42,10 @@
         </nav>
     </header>
     <main>
-          <div class="client-container">
-              <div class="client-block">
-                  <div class="client-header">
-                    <pre>
 
-<img src="<%=user.profile_pic%> " alt="User profile" width="100" height="150">
+      <div class="client-header">
+        <img src="def profile.jpg" alt="client image">
+        <pre>
 Username: <%= user.name %>
 Email Id: <%= user.email %> 
 <%= user.fullname %>
@@ -56,58 +54,219 @@ Email Id: <%= user.email %>
 <%= user.weight %>
 <%= user.height %>
 <%= user.Specify %>
-<%= user.gender %>
+<%= user.gender %>   
 
-Neck: <%= user.pain_range.neck %>
-Shoulder: <%= user.pain_range.shoulder %>
-Elbow: <%= user.pain_range.elbow %>
-Back: <%= user.pain_range.back %>
-Knee: <%= user.pain_range.knee %>
-Ankle: <%= user.pain_range.ankle %>
-
+<a href="update-client.html">Update Profile</a>       
+        </pre>
+      </div>
 
 <form action="/updateProfile">
   <a class="nav-link" ><button type="submit">Update Profile</button></a>
 </form>
-                    </pre>
+
+      
+
+          <div class="client-container">
+              <div class="client-block">
+                  <div class="client-header">
+
+
+
                   
 
               <h1 style="color: #ffffff;">Excercise with our monitoring: </h1>
-              <form action="/shoulder1">
-                <a class="nav-link" ><button type="submit">Shoulder up/down</button></a>
-              </form>
+              
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/1YlwX5A9f0U/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Shoulder 1</h4>
+                                    <p class="card-text">Shoulder up and down</p>
+                                    <form action="/shoulder1">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Shoulder up/down</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
+              <br>
+              <br>
 
               <h1 style="color: #ffffff;">Excercise recommended for you: </h1>
 
-              <h3 style="color: #ffffff;">Neck: </h3>
+              <!-- <h3 style="color: #ffffff;">Neck: </h3>
               <form action="/neck1">
-                <a class="nav-link" ><button type="submit">Neck left/right</button></a>
-              </form>
+                <a class="nav-link" ><button type="submit" style="background-color: aqua;">Neck left/right</button></a>
+              </form> -->
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/iwPsbH5yFc4/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Neck 1</h4>
+                                    <p class="card-text">Some quick neck exercises to reduce pain</p>
+                                    <form action="/neck1">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Neck left/right</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
 
-              <h3 style="color: #ffffff;">Shoulder: </h3>
+              <!-- <h3 style="color: #ffffff;">Shoulder: </h3>
               <form action="/shoulder2">
                 <a class="nav-link" ><button type="submit">Shoulder up/down</button></a>
-              </form>
+              </form> -->
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/FnOq_VZm-nk/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Shoulder 2</h4>
+                                    <p class="card-text">Set of exercise for eliminating shoulder pain.</p>
+                                    <form action="/shoulder2">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Shoulder up/down</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
 
-              <h3 style="color: #ffffff;">Elbow: </h3> 
+              <!-- <h3 style="color: #ffffff;">Elbow: </h3> 
               <form action="/elbow1">
                 <a class="nav-link" ><button type="submit">Elbow Exercise</button></a>
-              </form>
+              </form> -->
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/Lf695_IJO8g/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Elbow 1</h4>
+                                    <p class="card-text">Elbow cracking or weakness? Jump on these exercise to eliminate all of it.</p>
+                                    <form action="/elbow1">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Elbow Exercise</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
 
-              <h3 style="color: #ffffff;">Back: </h3>
+              <!-- <h3 style="color: #ffffff;">Back: </h3>
               <form action="/back1">
                 <a class="nav-link" ><button type="submit">Back Excercise</button></a>
-              </form>
+              </form> -->
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/Ip0S-HHQIoc/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Back 1</h4>
+                                    <p class="card-text">Backi pain from sitting all day at job? Try out these exercises.</p>
+                                    <form action="/back1">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Back Excercise</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
 
-              <h3 style="color: #ffffff;">Knee: </h3>
+              <!-- <h3 style="color: #ffffff;">Knee: </h3>
               <form action="/knee1">
                 <a class="nav-link" ><button type="submit">Knee exercise</button></a>
-              </form>
+              </form> -->
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/pOrc3zADC7k/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Knee 1</h4>
+                                    <p class="card-text">Constant knee pain? Weak kness? Go for this exercise.</p>
+                                    <form action="/knee1">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Knee exercise</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
 
-              <h3 style="color: #ffffff;">Ankle: </h3>
+              <!-- <h3 style="color: #ffffff;">Ankle: </h3>
               <form action="/ankle1">
                 <a class="nav-link" ><button type="submit">Ankle exercise</button></a>
-              </form>
+              </form> -->
+              <!-- exer -->
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-horizontal">
+                                <div class="img-square-wrapper">
+                                    <img class="" src="https://i1.ytimg.com/vi/hEmLp6iQB7M/mqdefault.jpg" alt="Card image cap">
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title">Ankle 1</h4>
+                                    <p class="card-text">Flat foot increase the load on your ankles, try out this exercise to beat it.</p>
+                                    <form action="/ankle1">
+                                      <a class="nav-link" ><button type="submit" style="background-color: aqua;">Ankle exercise</button></a>
+                                    </form>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <!-- exer -->
+
+              <br>
+              <br>
 
 
 
