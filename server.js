@@ -296,6 +296,11 @@ app.get('/shoulder1',  (req, res) => {
     res.render('test.ejs')
   })
 
+app.get('/back_auto',  (req, res) => {
+
+    res.render('test1.ejs')
+})
+
 var videos = {
     "neck1":"https://www.youtube.com/embed/iwPsbH5yFc4",
     "shoulder1":"https://www.youtube.com/embed/FnOq_VZm-nk",

@@ -1,0 +1,125 @@
+
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/addons/p5.sound.min.js"></script>
+  <script src="https://unpkg.com/ml5@0.5.0/dist/ml5.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css"> -->
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <base href="/"> 
+      <link rel="stylesheet" href="./physio.css">
+      <link rel="stylesheet" href="style.css">
+      <!-- <script src="https://unpkg.com/ml5@0.4.2/dist/ml5.min.js"></script> -->
+      <!-- p5 -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.min.js"></script>
+      <!-- ml5 -->
+      <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+      <title>Phys.io</title>
+      <link rel="shortcut icon" href="ic.ico" type="image/x-icon">
+  </head>
+  <body style="background-color: black;">
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/">
+              <img src="head logo.png" width="35" height="35" class="d-inline-block align-top" alt="logo" style="border-radius: 30%;">
+                Phys.io
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                  <a class="nav-link" href="about.html">About Us</a>
+                </li>
+                <li class="nav-item active">
+                  <a class="nav-link" href="contact.html">Contact Us</a>
+                </li>
+              </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- <div class="container"> -->
+            <div class="row">
+              <div class="col">
+                <div class="card-body">
+                    <div id="booth">
+                        <br>
+                        <!-- <video id="video" height=100% width= 100% autoplay></video> -->
+                    </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="row">
+                    <div class="col">
+                        <div class="card-body">
+                            <center>
+                                <img id="edit-save" src="11.jpg" width="300" height="450">
+                            </center>
+
+                        </div>
+                        <div class="card" style="margin-left: 20px; margin-right: 20px;">
+                            <button style="background-color: rgb(21, 57, 126); ">
+                                <h1>NEXT MOVE</h1>
+                            </button>
+                        </div>
+                        
+                    </div>
+                  </div>
+              </div>
+
+              <div class="col">
+                  
+                <div class="row">
+                    <div class="col">
+                        <div class="card" style="background-color: rgb(240, 48, 48); margin: 33px; height: 170px;">
+                            <center>
+                                <h3><b>Repetition</b></h3><br>
+                                <h1 id="name1" style="font-size: 5em;">0</h1>
+                            </center>
+                        </div>
+                        
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                        <div class="card" style="background-color: rgb(240, 48, 48); margin: 30px; height: 170px;">
+                            <center>
+                                <h3 ><b>Accuracy</b></h3><br>
+                                <h1 id="name2" style="font-size: 5em;">0%</h1>
+                            </center>
+                        </div>
+                    </div>
+                  </div>
+                  <br>
+                        <center>
+                            <!-- <a class="btn btn-danger" href="/" role="button" style="height: 60px; width: 200px;"><h1 style="color: black;">STOP<br></h1></a> -->
+                            <form action="/user">
+                                <a class="btn btn-danger" style="height: 60px; width: 300px;" ><button type="submit" style="height:40px; width: 200px; background-color: transparent;"><h1><b>STOP</b></h1></button></a>
+                            </form>
+                        </center>
+                        
+                </div>
+                  
+                  </a>
+                  
+              </div>
+            </div>
+          <!-- </div> -->
+
+    </main>
+
+      <script src="./sketch1.js" charset="UTF-8"></script>
+
+  </body>
+  </html>
