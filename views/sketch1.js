@@ -46,9 +46,9 @@ function setup() {
   }
   brain = ml5.neuralNetwork(options);
   const modelInfo = {
-    model: 'model/model (1).json',
-    metadata: 'model/model_meta (1).json',
-    weights: 'model/model.weights (1).bin',
+    model: 'model1/model (3).json',
+    metadata: 'model1/model_meta (3).json',
+    weights: 'model1/model.weights (3).bin',
   };
   brain.load(modelInfo, brainLoaded);
 
@@ -85,9 +85,9 @@ function gotResult(error, results) {
     poseLabel = results[0].label.toUpperCase();
     
     if (poseLabel === "U"){
-      poseLabel = "Up"
+      poseLabel = "ToSky"
     }else{
-      poseLabel = "Down"
+      poseLabel = "ToeTouch"
     }
     //console.log(poseLabel);
     var elem = document.getElementById('name1');
@@ -99,23 +99,23 @@ function gotResult(error, results) {
     nowPose = poseLabel
     let d = 0;
     let accu = 100;
-    if(nowPose==="Up"){
-      d = dist(pose.leftShoulder.x, pose.leftShoulder.y, pose.leftWrist.x, pose.leftWrist.y);
-      if(d>70){
-        accu = 100;
-      }else{
-        accu = round((d*100)/100);
-      }
-    }else{
-      d = dist(pose.leftShoulder.x, pose.leftShoulder.y, pose.leftWrist.x, pose.leftWrist.y);
-      if(d>170){
-        accu = 100;
-      }else{
-        accu = round((d*100)/170);
-      }
-    }
+    // if(nowPose==="Up"){
+    //   d = dist(pose.leftShoulder.x, pose.leftShoulder.y, pose.leftWrist.x, pose.leftWrist.y);
+    //   if(d>70){
+    //     accu = 100;
+    //   }else{
+    //     accu = round((d*100)/100);
+    //   }
+    // }else{
+    //   d = dist(pose.leftShoulder.x, pose.leftShoulder.y, pose.leftWrist.x, pose.leftWrist.y);
+    //   if(d>170){
+    //     accu = 100;
+    //   }else{
+    //     accu = round((d*100)/170);
+    //   }
+    // }
 
-    
+    accu = Math.round(results[0].confidence * 100)
 
     var elem1 = document.getElementById('name2');
     elem1.innerHTML=round(accu)+"%";
@@ -128,12 +128,12 @@ function gotResult(error, results) {
         repti++;
         repLimit=0;
         
-        if(nowPose==="Down"){
+        if(nowPose==="ToeTouch"){
           let edit_save = document.getElementById("edit-save");
           edit_save.src = "./11.jpg";
         }else{
           let edit_save = document.getElementById("edit-save");
-          edit_save.src = "./22.jpg";
+          edit_save.src = "./toe_touch.png";
         }
         oldPose = nowPose;
         if(repti>1 && repti%2===1){
