@@ -27,7 +27,6 @@ function uploadFile(file){
 }
 exports.uploadFile = uploadFile
 
-
 //download a file from s3
 function getFileStream(fileKey){
 

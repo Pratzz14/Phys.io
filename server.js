@@ -1,10 +1,11 @@
 const { name } = require('ejs')
 const express = require('express')
 const app = express()
+require("dotenv").config()
 
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const JWT_SECRET = "hellohellokaraylachotasaphone"
+const JWT_SECRET = process.env.JWT_SECRET
 const jwt_decode = require("jwt-decode")
 
 const cookieParser = require("cookie-parser");
@@ -13,8 +14,7 @@ const User = require("./model/user")
 const Profile = require("./model/profile")
 const mongoose = require("mongoose")
 const path = require("path")
-// mongoose.connect("mongodb://localhost:27017/login-db")
-mongoose.connect("mongodb+srv://testdb:testdb@cluster0.jh0j0.mongodb.net/physio?retryWrites=true&w=majority")
+mongoose.connect("mongodb://localhost:27017/login-db")
 
 const { uploadFile, getFileStream } = require("./s3")
 
@@ -47,7 +47,6 @@ const fileFilter = (req,file,cb) => {
     }
 }
 
-// const upload = multer({dest: 'uploads/'})
 const upload = multer({
     storage: storage,
     limits:{
@@ -57,7 +56,6 @@ const upload = multer({
 })
 
 app.get('/', (req,res)=> {
-    // res.send("hii")
     res.render("home",{name:"Pratik"})
 })
 
@@ -90,12 +88,6 @@ app.post('/login', async (req,res)=>{
         const token = jwt.sign({
             id: user._id
         },JWT_SECRET)
-
-        // res.json({
-        //     status: "Successful",
-        //     message: "Logged in",
-        //     data: token
-        // })
 
         res.cookie("physio",token)
 
@@ -149,12 +141,6 @@ app.post('/register', async (req,res)=>{
 
     try {
 
-        // const db_response = await User.create({
-        //     email,
-        //     name,
-        //     passwd
-        // })
-
         const db_response = await User.create({
             email,
             name,
@@ -201,11 +187,6 @@ app.post('/register', async (req,res)=>{
         }
         return res.json({status:"error"})
     }
-    
-    // return res.json({
-    //     status:"Successful",
-    //     message: "User registered"
-    // })
 
     return res.redirect("login")
 })
@@ -221,9 +202,6 @@ app.get('/user', async(req,res)=> {
     const user_id = jwt_decode(token.physio)
     const user = await User.findOne({_id: user_id.id})
     const prof = await Profile.findOne({name: user.name})
-
-    // const readStream = getFileStream(prof.profile_pic)
-    // readStream.pipe(res)
 
     res.render("clientdash", {user:prof})
 })
@@ -285,10 +263,7 @@ app.post('/updateProfile', upload.single('filename') , async (req,res)=>{
     
 
     res.redirect("user")
-    // res.json({
-    //     status:"successful",
-    //     message: "profile updated"
-    // })
+
 })
 
 app.get('/shoulder1',  (req, res) => {
