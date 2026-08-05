@@ -18,19 +18,22 @@ try {
         throw "Unable to list repository files with git."
     }
 
-    $files = $paths |
-        ForEach-Object { Get-Item -LiteralPath $_ } |
-        Where-Object {
-            -not $_.PSIsContainer -and
-            $_.Name -notin @('package-lock.json', 'model.weights.bin', 'ml5.min.js', 'p5.min.js') -and
-            $_.FullName -ne (Join-Path $repositoryRoot 'scripts/check-secrets.ps1')
+    $files = $paths | ForEach-Object {
+        $absolutePath = Join-Path $repositoryRoot $_
+        if (
+            [System.IO.File]::Exists($absolutePath) -and
+            (Split-Path -Leaf $absolutePath) -notin @('package-lock.json', 'model.weights.bin', 'ml5.min.js', 'p5.min.js') -and
+            $absolutePath -ne (Join-Path $repositoryRoot 'scripts/check-secrets.ps1')
+        ) {
+            $absolutePath
         }
+    }
 
     $matches = foreach ($file in $files) {
-        $text = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        $text = Get-Content -Raw -LiteralPath $file -ErrorAction SilentlyContinue
         foreach ($pattern in $patterns) {
             if ($text -match $pattern) {
-                [pscustomobject]@{ File = $file.FullName; Pattern = $pattern }
+                [pscustomobject]@{ File = $file; Pattern = $pattern }
             }
         }
     }
