@@ -1,3 +1,23 @@
-node_modules/
-uploads/
+# Secrets and local runtime state
 .env
+backend/.env
+backend/.venv/
+backend/.audit-cache/
+backend/data/
+backend/uploads/
+
+# JavaScript dependencies and build output
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Python and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local development logs
+*.out
+*.err

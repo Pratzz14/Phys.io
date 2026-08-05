@@ -1,0 +1,18 @@
+import { Link } from "../router";
+import { useEffect, useState } from "react";
+import { getProfile } from "../api";
+import { exercises } from "../data/exercises";
+import type { Profile } from "../types";
+import { ArrowIcon } from "../components/Icons";
+
+const painItems = [
+  ["Shoulder", "shoulder_pain"], ["Lower back", "back_pain"], ["Elbow", "elbow_pain"], ["Knees", "knee_pain"], ["Ankles", "ankle_pain"],
+] as const;
+
+export function DashboardPage() {
+  const [profile, setProfile] = useState<Profile | null>(null); const [error, setError] = useState("");
+  useEffect(() => { void getProfile().then(setProfile).catch((err) => setError(err instanceof Error ? err.message : "Unable to load profile")); }, []);
+  if (error) return <div className="page-empty"><h1>We could not load your profile.</h1><p>{error}</p></div>;
+  if (!profile) return <div className="loading-screen">Preparing your dashboard…</div>;
+  return <div className="dashboard-page"><section className="welcome-row"><div><p className="eyebrow">Your movement space</p><h1>Good morning, {profile.name}</h1><p className="lead">Move with confidence, one steady repetition at a time.</p></div><Link className="secondary-button" to="/profile">Update profile <ArrowIcon /></Link></section><div className="dashboard-grid"><section className="monitor-card"><div className="section-heading"><div><p className="eyebrow">Live monitoring</p><h2>Make your next move count</h2></div><span className="camera-ready"><span className="status-dot ready" /> Browser ready</span></div><div className="monitor-illustration"><div className="illustration-figure">◒</div><div className="illustration-orbit orbit-one" /><div className="illustration-orbit orbit-two" /><div className="dot-field">· · ·<br />· · ·<br />· · ·</div></div><div className="monitor-footer"><p>Use your camera for real-time feedback. Your video stays on this device.</p><Link className="primary-button" to="/exercise/shoulder-mobility">Start monitoring <ArrowIcon /></Link></div></section><section className="profile-card"><div className="section-heading"><div><p className="eyebrow">Your profile</p><h2>Keep it personal</h2></div>{profile.image_url ? <img className="profile-avatar profile-image" src={profile.image_url} alt="Your profile" /> : <div className="profile-avatar">{profile.name.slice(0, 1).toUpperCase()}</div>}</div><dl className="profile-details"><div><dt>Name</dt><dd>{profile.fullname || profile.name}</dd></div><div><dt>Focus</dt><dd>Mobility & strength</dd></div><div><dt>Age</dt><dd>{profile.age || "Not set"}</dd></div></dl><div className="pain-section"><div className="pain-heading"><h3>Pain range</h3><span><i className="legend low" /> Low <i className="legend high" /> High</span></div>{painItems.map(([label, key]) => { const value = profile[key]; return <div className="pain-row" key={key}><span>{label}</span><div className="pain-track"><span style={{ width: `${Math.max(8, value * 2)}%` }} /><b style={{ left: `${Math.min(96, Math.max(4, value * 2))}%` }} /></div></div>; })}</div></section></div><section className="exercise-section"><div className="section-heading"><div><p className="eyebrow">Recommended exercises</p><h2>Build a gentle rhythm</h2></div><Link className="text-link" to="/exercises">View all <ArrowIcon /></Link></div><div className="exercise-row">{exercises.slice(0, 3).map((exercise) => <Link to={`/exercise/${exercise.id}`} className="exercise-card" key={exercise.id}><div className={`exercise-art ${exercise.accent}`}><span>✦</span></div><div><h3>{exercise.title}</h3><p>{exercise.description}</p></div><ArrowIcon /></Link>)}</div></section></div>;
+}
