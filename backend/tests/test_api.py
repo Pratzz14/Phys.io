@@ -58,6 +58,19 @@ def test_register_login_and_profile(client: TestClient) -> None:
     assert update.status_code == 200
     assert update.json()["fullname"] == "Local User"
 
+    logout = client.post("/api/auth/logout", headers={"X-CSRF-Token": token})
+    assert logout.status_code == 204
+
+    token = csrf(client)
+    login = client.post(
+        "/api/auth/login",
+        headers={"X-CSRF-Token": token},
+        json={"email": "local@example.com", "password": "a-strong-local-password"},
+    )
+    assert login.status_code == 200
+    assert login.json()["user"]["email"] == "local@example.com"
+    assert client.get("/api/auth/me").status_code == 200
+
 
 def test_state_change_requires_csrf(client: TestClient) -> None:
     csrf_token = csrf(client)

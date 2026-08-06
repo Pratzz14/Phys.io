@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { Exercise, MonitorState } from "../types";
 
 declare global {
@@ -9,6 +10,26 @@ declare global {
 }
 
 const scriptLoads = new Map<string, Promise<void>>();
+
+export function nextPositionFor(label: string): string {
+  if (label === "Up") return "Down";
+  if (label === "Down") return "Up";
+  if (label === "To sky") return "Toe touch";
+  if (label === "Toe touch") return "To sky";
+  return "-";
+}
+
+function statusLabel(status: MonitorState["status"]): string {
+  if (status === "loading") return "Preparing camera";
+  if (status === "ready") return "Camera ready";
+  if (status === "running") return "Live";
+  if (status === "error") return "Camera unavailable";
+  return "Waiting";
+}
+
+function currentPosition(state: MonitorState): string {
+  return state.status === "running" ? state.label : statusLabel(state.status);
+}
 
 function loadScript(src: string): Promise<void> {
   const existing = scriptLoads.get(src);
@@ -24,7 +45,7 @@ function loadScript(src: string): Promise<void> {
   return load;
 }
 
-export function ExerciseMonitor({ exercise }: { exercise: Exercise }) {
+export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; children?: ReactNode }) {
   const boothRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<MonitorState>({ status: "idle", label: "Waiting", repetitions: 0, accuracy: 0 });
 
@@ -32,7 +53,7 @@ export function ExerciseMonitor({ exercise }: { exercise: Exercise }) {
     let instance: any;
     let stream: MediaStream | undefined;
     let cancelled = false;
-    setState({ status: "loading", label: "Loading camera and model…", repetitions: 0, accuracy: 0 });
+    setState({ status: "loading", label: "Loading camera and model...", repetitions: 0, accuracy: 0 });
 
     const start = async () => {
       try {
@@ -43,7 +64,6 @@ export function ExerciseMonitor({ exercise }: { exercise: Exercise }) {
           let video: any;
           let pose: any;
           let brain: any;
-          let poseLabel = "Waiting";
           let oldPose = "";
           let rep = 0;
           let repTicks = 0;
@@ -93,8 +113,7 @@ export function ExerciseMonitor({ exercise }: { exercise: Exercise }) {
                   if (cycles > 1 && cycles % 2 === 1) rep += 1;
                   oldPose = nextLabel;
                 }
-                poseLabel = nextLabel;
-                setState({ status: "running", label: poseLabel, repetitions: rep, accuracy });
+                setState({ status: "running", label: nextLabel, repetitions: rep, accuracy });
               }
               classify();
             });
@@ -114,11 +133,6 @@ export function ExerciseMonitor({ exercise }: { exercise: Exercise }) {
               pose.keypoints.forEach((keypoint: any) => p.ellipse(keypoint.position.x, keypoint.position.y, 10));
             }
             p.pop();
-            p.noStroke();
-            p.fill(245, 243, 238);
-            p.textSize(22);
-            p.textAlign(p.LEFT, p.TOP);
-            p.text(poseLabel, 20, 18);
           };
 
           p.remove = ((original) => (...args: any[]) => {
@@ -139,11 +153,36 @@ export function ExerciseMonitor({ exercise }: { exercise: Exercise }) {
   }, [exercise.model]);
 
   return (
-    <div className="monitor-wrap">
-      <div ref={boothRef} className="monitor-canvas" aria-label="Live exercise camera view" />
-      <div className="monitor-status"><span className={`status-dot ${state.status}`} /> {state.label}</div>
-      {state.status === "running" && <div className="monitor-metrics"><span>{state.repetitions} reps</span><span>{state.accuracy}% confidence</span></div>}
-      {state.message && <p className="error-copy">{state.message}</p>}
+    <div className="monitor-workspace">
+      <div className="monitor-wrap">
+        <div ref={boothRef} className="monitor-canvas" aria-label="Live exercise camera view" />
+      </div>
+      <aside className="monitor-panel" aria-label="Live exercise metadata">
+        {children}
+        {state.message && <p className="monitor-error">{state.message}</p>}
+        <div className="monitor-panel-header">
+          <span className="camera-ready"><span className="status-dot ready" /> Private on-device session</span>
+          <span className="monitor-live-state" aria-live="polite"><span className={`status-dot ${state.status}`} /> {statusLabel(state.status)}</span>
+        </div>
+        <div className="monitor-summary" aria-label="Exercise progress">
+          <div className="monitor-metric monitor-metric-current">
+            <span className="monitor-metric-label">Current position</span>
+            <strong>{currentPosition(state)}</strong>
+          </div>
+          <div className="monitor-metric monitor-metric-next">
+            <span className="monitor-metric-label">Next position</span>
+            <strong>{state.status === "running" ? nextPositionFor(state.label) : "-"}</strong>
+          </div>
+          <div className="monitor-metric monitor-metric-accuracy">
+            <span className="monitor-metric-label">Accuracy</span>
+            <strong>{state.status === "running" ? `${state.accuracy}%` : "-"}</strong>
+          </div>
+          <div className="monitor-metric monitor-metric-repetitions">
+            <span className="monitor-metric-label">Repetitions</span>
+            <strong>{state.repetitions}</strong>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

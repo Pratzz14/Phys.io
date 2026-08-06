@@ -112,10 +112,13 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
         raise HTTPException(status_code=429, detail="Too many attempts")
     record = require_csrf(request, db)
     user = db.scalar(select(User).where(User.email == str(payload.email).lower()))
-    if not user or not password_hash.verify(payload.password, user.password_hash):
+    if not user:
         raise HTTPException(status_code=401, detail="Incorrect email or password")
-    if password_hash.needs_update(user.password_hash):
-        user.password_hash = password_hash.hash(payload.password)
+    valid_password, updated_hash = password_hash.verify_and_update(payload.password, user.password_hash)
+    if not valid_password:
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    if updated_hash:
+        user.password_hash = updated_hash
     _, csrf = replace_session(db, response, record, user.id)
     return AuthResponse(user=UserResponse(id=user.id, name=user.name, email=user.email), csrf_token=csrf)
 
