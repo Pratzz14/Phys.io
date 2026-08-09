@@ -5,6 +5,7 @@ import { Router } from "./router";
 import { ExercisesPage } from "./pages/ExercisesPage";
 import { ExercisePage } from "./pages/ExercisePage";
 import { nextPositionFor } from "./components/ExerciseMonitor";
+import { exercises } from "./data/exercises";
 
 vi.mock("./api", () => ({
   refreshCsrf: vi.fn().mockResolvedValue("csrf"),
@@ -53,4 +54,15 @@ test("keeps setup guidance for guidance-only exercises", () => {
   window.history.pushState({}, "", "/exercise/neck-release");
   render(<Router><ExercisePage /></Router>);
   expect(screen.getByRole("heading", { name: /before you begin/i })).toBeInTheDocument();
+});
+
+test("provides distinct guidance for every guidance-only exercise", () => {
+  const guided = exercises.filter((exercise) => exercise.mode === "guidance");
+  expect(guided.every((exercise) => exercise.guidance)).toBe(true);
+  expect(new Set(guided.map((exercise) => exercise.guidance?.intro)).size).toBe(guided.length);
+
+  window.history.pushState({}, "", "/exercise/knee-control");
+  render(<Router><ExercisePage /></Router>);
+  expect(screen.getByText("Lower with control")).toBeInTheDocument();
+  expect(screen.queryByText("Tilt to one side")).not.toBeInTheDocument();
 });

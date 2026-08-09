@@ -63,6 +63,7 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
         instance = new window.p5((p: any) => {
           let video: any;
           let pose: any;
+          let skeleton: any[] = [];
           let brain: any;
           let oldPose = "";
           let rep = 0;
@@ -85,7 +86,10 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
             video.size(640, 480);
             video.hide();
             window.ml5.poseNet(video, () => setState((current) => ({ ...current, status: "ready", label: "Camera ready" }))).on("pose", (poses: any[]) => {
-              if (poses.length) pose = poses[0].pose;
+              if (poses.length) {
+                pose = poses[0].pose;
+                skeleton = poses[0].skeleton || [];
+              }
             });
             brain = window.ml5.neuralNetwork({ inputs: 34, outputs: 4, task: "classification", debug: false });
             const base = exercise.model === "back" ? "/models/back/" : "/models/shoulder/";
@@ -126,9 +130,16 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
             p.scale(-1, 1);
             p.image(video, 0, 0, video.width, video.height);
             if (pose) {
-              p.stroke(255);
-              p.strokeWeight(2);
-              p.fill(168, 196, 181);
+              p.stroke(85, 216, 194, 210);
+              p.strokeWeight(3);
+              p.noFill();
+              skeleton.forEach((pair: any[]) => {
+                const first = pair?.[0]?.position;
+                const second = pair?.[1]?.position;
+                if (first && second) p.line(first.x, first.y, second.x, second.y);
+              });
+              p.fill(85, 216, 194);
+              p.noStroke();
               [pose.rightWrist, pose.leftWrist, pose.rightShoulder, pose.leftShoulder].forEach((point: any) => p.ellipse(point.x, point.y, 20));
               pose.keypoints.forEach((keypoint: any) => p.ellipse(keypoint.position.x, keypoint.position.y, 10));
             }

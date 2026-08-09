@@ -1,30 +1,50 @@
+import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "../router";
 import { useAuth } from "../auth/AuthProvider";
-import { ExerciseIcon, HomeIcon, LogoutIcon, UserIcon } from "./Icons";
+import { BrandMark, ExerciseIcon, HomeIcon, LogoutIcon, UserIcon } from "./Icons";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+const navigation = [
+  { to: "/dashboard", label: "Dashboard", icon: HomeIcon },
+  { to: "/exercises", label: "Exercises", icon: ExerciseIcon },
+  { to: "/profile", label: "Profile", icon: UserIcon },
+];
+
+export function AppShell({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const initial = user?.name?.slice(0, 1).toUpperCase() || "P";
+  const logout = () => { void signOut().then(() => navigate("/login")); };
+
   return (
     <div className="app-shell">
-      <aside className="side-rail" aria-label="Primary navigation">
-        <div className="brand-mark">P</div>
-        <nav className="rail-links">
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? "rail-link active" : "rail-link"} aria-label="Dashboard"><HomeIcon /></NavLink>
-          <NavLink to="/profile" className={({ isActive }) => isActive ? "rail-link active" : "rail-link"} aria-label="Profile"><UserIcon /></NavLink>
-          <NavLink to="/exercises" className={({ isActive }) => isActive ? "rail-link active" : "rail-link"} aria-label="Exercises"><ExerciseIcon /></NavLink>
+      <header className="topbar">
+        <NavLink to="/dashboard" className={() => "brand-lockup topbar-brand"} aria-label="Phys.io dashboard">
+          <BrandMark size={30} />
+          <span>Phys.io</span>
+        </NavLink>
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          {navigation.map(({ to, label, icon: NavIcon }) => (
+            <NavLink key={to} to={to} className={({ isActive }) => isActive ? "top-nav-link active" : "top-nav-link"}>
+              <NavIcon size={21} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
         </nav>
-        <div className="rail-bottom">
-          <button className="rail-link" aria-label="Log out" onClick={() => { void signOut().then(() => navigate("/login")); }}><LogoutIcon /></button>
+        <div className="topbar-user">
+          <span className="avatar-mini" aria-hidden="true">{initial}</span>
+          <span className="topbar-user-name">{user?.name}</span>
+          <button className="icon-button header-logout" type="button" onClick={logout} aria-label="Log out" title="Log out"><LogoutIcon size={19} /></button>
         </div>
-      </aside>
-      <main className="app-main">
-        <header className="topbar">
-          <div className="topbar-brand"><span className="brand-dot" /> Phys.io</div>
-          <div className="topbar-user"><span>{user?.name}</span><span className="avatar-mini">{user?.name?.slice(0, 1).toUpperCase()}</span></div>
-        </header>
-        {children}
-      </main>
+      </header>
+      <main className="app-main">{children}</main>
+      <nav className="mobile-nav" aria-label="Mobile navigation">
+        {navigation.map(({ to, label, icon: NavIcon }) => (
+          <NavLink key={to} to={to} className={({ isActive }) => isActive ? "mobile-nav-link active" : "mobile-nav-link"}>
+            <NavIcon size={21} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }

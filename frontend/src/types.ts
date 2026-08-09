@@ -26,6 +26,25 @@ export interface Profile {
   image_url: string | null;
 }
 
+export type PoseVariant = "standing" | "shoulder" | "back" | "neck" | "elbow" | "knee" | "ankle";
+
+export interface GuidanceFrame {
+  pose: PoseVariant;
+  mirrored?: boolean;
+}
+
+export interface GuidanceStep {
+  title: string;
+  description: string;
+}
+
+export interface ExerciseGuidance {
+  intro: string;
+  frames: GuidanceFrame[];
+  steps: GuidanceStep[];
+  checklist: string[];
+}
+
 export interface Exercise {
   id: string;
   title: string;
@@ -35,6 +54,7 @@ export interface Exercise {
   mode: "live" | "guidance";
   model?: "shoulder" | "back";
   videoUrl?: string;
+  guidance?: ExerciseGuidance;
 }
 
 export interface MonitorState {
