@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import uuid
 from pathlib import Path
 
 import pytest
@@ -27,6 +28,22 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
 
 def csrf(client: TestClient) -> str:
     return client.get("/api/auth/csrf").json()["csrf_token"]
+
+
+def register_user(client: TestClient, name: str, email: str) -> str:
+    token = csrf(client)
+    response = client.post(
+        "/api/auth/register",
+        headers={"X-CSRF-Token": token},
+        json={
+            "name": name,
+            "email": email,
+            "password": "a-strong-local-password",
+            "confirm_password": "a-strong-local-password",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()["csrf_token"]
 
 
 def test_register_login_and_profile(client: TestClient) -> None:
@@ -195,3 +212,138 @@ def test_classifier_prediction_is_local_authenticated_and_allowlisted(client: Te
         json={"world_landmarks": _world_landmarks()[:-1]},
     )
     assert malformed.status_code == 422
+
+
+def exercise_session_payload(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "exercise_id": "hands-up-down",
+        "started_at": "2026-07-20T09:00:00Z",
+        "last_active_at": "2026-07-20T09:02:00Z",
+        "active_seconds": 90,
+        "repetitions": 4,
+        "average_accuracy": 84.5,
+        "accuracy_sample_count": 20,
+        "revision": 1,
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_exercise_session_write_requires_auth_csrf_and_valid_summary(client: TestClient) -> None:
+    session_id = str(uuid.uuid4())
+    assert client.put(f"/api/exercise-sessions/{session_id}", json=exercise_session_payload()).status_code == 401
+    token = register_user(client, "metricsuser", "metrics@example.com")
+
+    missing_csrf = client.put(f"/api/exercise-sessions/{session_id}", json=exercise_session_payload())
+    assert missing_csrf.status_code == 403
+    headers = {"X-CSRF-Token": token}
+    assert client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(repetitions=0),
+    ).status_code == 422
+    assert client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(exercise_id="unknown-exercise"),
+    ).status_code == 422
+    assert client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(started_at="2026-07-20T09:00:00"),
+    ).status_code == 422
+
+
+def test_exercise_sessions_are_idempotent_revisioned_and_date_filtered(client: TestClient) -> None:
+    token = register_user(client, "progressuser", "progress@example.com")
+    headers = {"X-CSRF-Token": token}
+    session_id = str(uuid.uuid4())
+
+    created = client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(),
+    )
+    assert created.status_code == 200
+    assert created.json()["session_id"] == session_id
+    assert created.json()["repetitions"] == 4
+
+    stale = client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(repetitions=1, revision=1),
+    )
+    assert stale.status_code == 200
+    assert stale.json()["repetitions"] == 4
+
+    updated = client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(
+            last_active_at="2026-07-20T09:04:00Z",
+            active_seconds=150,
+            repetitions=7,
+            average_accuracy=86.25,
+            accuracy_sample_count=40,
+            revision=2,
+        ),
+    )
+    assert updated.status_code == 200
+    assert updated.json()["repetitions"] == 7
+    assert updated.json()["revision"] == 2
+
+    changed_exercise = client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(
+            exercise_id="hands-side-up",
+            last_active_at="2026-07-20T09:05:00Z",
+            active_seconds=160,
+            repetitions=8,
+            accuracy_sample_count=45,
+            revision=3,
+        ),
+    )
+    assert changed_exercise.status_code == 409
+
+    backwards = client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers=headers,
+        json=exercise_session_payload(
+            last_active_at="2026-07-20T09:03:00Z",
+            active_seconds=120,
+            repetitions=6,
+            accuracy_sample_count=30,
+            revision=3,
+        ),
+    )
+    assert backwards.status_code == 409
+
+    history = client.get("/api/exercise-sessions", params={"since": "2026-07-14T00:00:00+05:30"})
+    assert history.status_code == 200
+    assert [item["session_id"] for item in history.json()] == [session_id]
+    assert history.json()[0]["last_active_at"].endswith("Z")
+    assert client.get("/api/exercise-sessions", params={"since": "2026-07-21T00:00:00Z"}).json() == []
+    assert client.get("/api/exercise-sessions", params={"since": "2026-07-14T00:00:00"}).status_code == 422
+
+
+def test_exercise_sessions_are_isolated_by_user(client: TestClient) -> None:
+    first_token = register_user(client, "firstmetrics", "first-metrics@example.com")
+    session_id = str(uuid.uuid4())
+    assert client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers={"X-CSRF-Token": first_token},
+        json=exercise_session_payload(),
+    ).status_code == 200
+    assert client.post("/api/auth/logout", headers={"X-CSRF-Token": first_token}).status_code == 204
+
+    second_token = register_user(client, "secondmetrics", "second-metrics@example.com")
+    hidden = client.get("/api/exercise-sessions", params={"since": "2026-01-01T00:00:00Z"})
+    assert hidden.status_code == 200
+    assert hidden.json() == []
+    collision = client.put(
+        f"/api/exercise-sessions/{session_id}",
+        headers={"X-CSRF-Token": second_token},
+        json=exercise_session_payload(revision=2),
+    )
+    assert collision.status_code == 404

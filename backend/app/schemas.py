@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 
 class RegisterRequest(BaseModel):
@@ -85,3 +85,33 @@ class ClassifierPredictionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     world_landmarks: list[ClassifierLandmark] = Field(min_length=33, max_length=33)
+
+
+class ExerciseSessionUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    exercise_id: Literal["hands-up-down", "hands-side-up"]
+    started_at: datetime
+    last_active_at: datetime
+    active_seconds: int = Field(ge=0, le=86_400)
+    repetitions: int = Field(ge=1, le=100_000)
+    average_accuracy: float = Field(ge=0, le=100)
+    accuracy_sample_count: int = Field(ge=1, le=10_000_000)
+    revision: int = Field(ge=1, le=2_147_483_647)
+
+    @model_validator(mode="after")
+    def validate_timeline(self) -> Self:
+        if self.started_at.tzinfo is None or self.started_at.utcoffset() is None:
+            raise ValueError("started_at must include a timezone")
+        if self.last_active_at.tzinfo is None or self.last_active_at.utcoffset() is None:
+            raise ValueError("last_active_at must include a timezone")
+        elapsed_seconds = (self.last_active_at - self.started_at).total_seconds()
+        if elapsed_seconds < 0:
+            raise ValueError("last_active_at must not be before started_at")
+        if self.active_seconds > elapsed_seconds + 1:
+            raise ValueError("active_seconds cannot exceed elapsed session time")
+        return self
+
+
+class ExerciseSessionResponse(ExerciseSessionUpdate):
+    session_id: str

@@ -107,3 +107,20 @@ export interface MonitorState {
   repetitions: number;
   accuracy: number;
 }
+
+export type LiveExerciseId = "hands-up-down" | "hands-side-up";
+
+export interface ExerciseSessionUpdate {
+  exercise_id: LiveExerciseId;
+  started_at: string;
+  last_active_at: string;
+  active_seconds: number;
+  repetitions: number;
+  average_accuracy: number;
+  accuracy_sample_count: number;
+  revision: number;
+}
+
+export interface ExerciseSessionSummary extends ExerciseSessionUpdate {
+  session_id: string;
+}

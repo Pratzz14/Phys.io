@@ -11,6 +11,7 @@ vi.mock("./api", () => ({
   refreshCsrf: vi.fn().mockResolvedValue("csrf"),
   getMe: vi.fn().mockRejectedValue(new Error("not authenticated")),
   predictClassifier: vi.fn(),
+  saveExerciseSession: vi.fn(),
 }));
 
 vi.mock("./pose/usePoseCamera", () => ({

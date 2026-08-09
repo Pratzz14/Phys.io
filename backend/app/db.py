@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, create_engine, event
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 
 from .config import DATABASE_PATH
@@ -28,6 +28,7 @@ class User(Base):
 
     profile: Mapped["Profile"] = relationship(back_populates="user", cascade="all, delete-orphan", uselist=False)
     sessions: Mapped[list["SessionRecord"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    exercise_sessions: Mapped[list["ExerciseSession"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 class Profile(Base):
@@ -60,6 +61,29 @@ class SessionRecord(Base):
     csrf_hash: Mapped[str] = mapped_column(String(64))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     user: Mapped[User | None] = relationship(back_populates="sessions")
+
+
+class ExerciseSession(Base):
+    __tablename__ = "exercise_sessions"
+    __table_args__ = (
+        Index("ix_exercise_sessions_user_last_active", "user_id", "last_active_at"),
+        Index("ix_exercise_sessions_user_exercise_last_active", "user_id", "exercise_id", "last_active_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    exercise_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_active_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    active_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    repetitions: Mapped[int] = mapped_column(Integer, nullable=False)
+    average_accuracy: Mapped[float] = mapped_column(Float, nullable=False)
+    accuracy_sample_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    user: Mapped[User] = relationship(back_populates="exercise_sessions")
 
 
 DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)

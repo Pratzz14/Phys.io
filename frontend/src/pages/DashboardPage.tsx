@@ -1,21 +1,36 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "../router";
-import { getProfile } from "../api";
+import { getExerciseSessions, getProfile } from "../api";
 import { exercises } from "../data/exercises";
-import type { Profile } from "../types";
+import type { ExerciseSessionSummary, Profile } from "../types";
 import { ArrowIcon, CameraIcon, ExerciseIcon, InfoIcon, LockIcon, SunIcon, UserIcon } from "../components/Icons";
 import { MovementVisual } from "../components/MovementVisual";
 import { PAIN_MAX, painAreas, painPercent } from "../data/painAreas";
 import { greetingForHour } from "../utils/timeGreeting";
+import { ProgressSection } from "../components/ProgressSection";
+import { progressWindowStart } from "../progress";
 
 export function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
+  const [sessions, setSessions] = useState<ExerciseSessionSummary[]>([]);
+  const [progressLoading, setProgressLoading] = useState(true);
+  const [progressError, setProgressError] = useState("");
   const greeting = greetingForHour(new Date().getHours());
+
+  const loadProgress = useCallback(() => {
+    setProgressLoading(true);
+    setProgressError("");
+    void getExerciseSessions(progressWindowStart(new Date()))
+      .then(setSessions)
+      .catch((err) => setProgressError(err instanceof Error ? err.message : "Unable to load exercise progress"))
+      .finally(() => setProgressLoading(false));
+  }, []);
 
   useEffect(() => {
     void getProfile().then(setProfile).catch((err) => setError(err instanceof Error ? err.message : "Unable to load profile"));
-  }, []);
+    loadProgress();
+  }, [loadProgress]);
 
   if (error) return <div className="page-empty"><h1>We could not load your profile.</h1><p>{error}</p></div>;
   if (!profile) return <div className="loading-screen">Preparing your dashboard<span className="loading-pulse">{"\u2026"}</span></div>;
@@ -91,6 +106,7 @@ export function DashboardPage() {
           </section>
         </aside>
       </div>
+      <ProgressSection sessions={sessions} loading={progressLoading} error={progressError} onRetry={loadProgress} />
     </div>
   );
 }

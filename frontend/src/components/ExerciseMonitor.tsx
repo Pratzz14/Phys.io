@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { predictClassifier } from "../api";
+import { predictClassifier, saveExerciseSession } from "../api";
+import {
+  createExerciseSessionAccumulator,
+  LatestSessionSaveQueue,
+  nextSessionSnapshot,
+  recordValidTracking,
+  sessionNeedsAutosave,
+  setSessionRepetitions,
+} from "../exerciseSessionMetrics";
 import { usePoseCamera } from "../pose/usePoseCamera";
-import type { Exercise, MonitorState, PoseFrameResult } from "../types";
+import type { Exercise, LiveExerciseId, MonitorState, PoseFrameResult } from "../types";
 
 const PREDICTION_INTERVAL_MS = 200;
 const STABLE_POSITION_MS = 500;
@@ -81,6 +89,7 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<MonitorState>(initialState);
+  const [saveError, setSaveError] = useState("");
   const classifier = exercise.classifier;
   const lastRequestRef = useRef(0);
   const requestInFlightRef = useRef(false);
@@ -90,6 +99,8 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
   const candidateRef = useRef<{ label: string; since: number } | null>(null);
   const confirmedRef = useRef<string | null>(null);
   const progressRef = useRef<MotionProgress>({ start: null, current: null, transitions: 0, repetitions: 0, target: "-" });
+  const sessionMetricsRef = useRef(createExerciseSessionAccumulator(exercise.id as LiveExerciseId));
+  const saveQueueRef = useRef<LatestSessionSaveQueue | null>(null);
 
   const classLabels = useMemo(() => classifier?.endpoints.map((endpoint) => endpoint.classLabel) ?? [], [classifier]);
   const displayLabels = useMemo(() => classifier?.endpoints.map((endpoint) => endpoint.displayLabel) as [string, string] | undefined, [classifier]);
@@ -121,6 +132,13 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
     if (staleTimerRef.current !== null) window.clearTimeout(staleTimerRef.current);
     staleTimerRef.current = window.setTimeout(clearPrediction, STALE_POSITION_MS);
   }, [clearPrediction]);
+
+  const queueSessionSnapshot = useCallback((keepalive = false) => {
+    const snapshot = nextSessionSnapshot(sessionMetricsRef.current);
+    if (!snapshot || !saveQueueRef.current) return;
+    if (keepalive) saveQueueRef.current.flushKeepalive(snapshot);
+    else saveQueueRef.current.enqueue(snapshot);
+  }, []);
 
   const handlePoseResult = useCallback((result: PoseFrameResult) => {
     if (!classifier || !displayLabels) return;
@@ -155,6 +173,13 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
           (smoothed[candidate] ?? 0) > (smoothed[winner] ?? 0) ? candidate : winner,
         classLabels[0]);
         const confidence = smoothed[winningClass] ?? 0;
+        recordValidTracking(
+          sessionMetricsRef.current,
+          Date.now(),
+          confidence >= MIN_CONFIDENCE ? Math.round(confidence * 100) : null,
+          STALE_POSITION_MS,
+        );
+        if (sessionNeedsAutosave(sessionMetricsRef.current)) queueSessionSnapshot();
         if (!winningClass || confidence < MIN_CONFIDENCE) {
           candidateRef.current = null;
           showReadyLabel("Hold an endpoint pose");
@@ -175,6 +200,8 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
           if (confirmedRef.current !== displayLabel) {
             confirmedRef.current = displayLabel;
             progressRef.current = advanceRepetition(progressRef.current, displayLabel, displayLabels);
+            setSessionRepetitions(sessionMetricsRef.current, progressRef.current.repetitions);
+            if (sessionNeedsAutosave(sessionMetricsRef.current)) queueSessionSnapshot();
           }
           setState({
             status: "running",
@@ -197,18 +224,33 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
           requestInFlightRef.current = false;
         }
       });
-  }, [classLabels, classifier, displayForClass, displayLabels, refreshStaleTimer, showReadyLabel]);
+  }, [classLabels, classifier, displayForClass, displayLabels, queueSessionSnapshot, refreshStaleTimer, showReadyLabel]);
 
   const camera = usePoseCamera({ videoRef, canvasRef, onPoseResult: handlePoseResult });
 
   useEffect(() => {
     setState({ ...initialState(), status: "loading", label: "Loading camera and model..." });
+    setSaveError("");
     progressRef.current = { start: null, current: null, transitions: 0, repetitions: 0, target: "-" };
+    sessionMetricsRef.current = createExerciseSessionAccumulator(exercise.id as LiveExerciseId);
     historyRef.current = [];
     candidateRef.current = null;
     confirmedRef.current = null;
+    saveQueueRef.current?.dispose();
+    const saveQueue = new LatestSessionSaveQueue(saveExerciseSession, (error) => {
+      setSaveError(error ? "Progress could not be saved. We'll keep trying." : "");
+    });
+    saveQueueRef.current = saveQueue;
+    const flushOnPageHide = () => queueSessionSnapshot(true);
+    window.addEventListener("pagehide", flushOnPageHide);
     void camera.start();
-    return () => camera.stop();
+    return () => {
+      window.removeEventListener("pagehide", flushOnPageHide);
+      queueSessionSnapshot(true);
+      saveQueue.dispose();
+      if (saveQueueRef.current === saveQueue) saveQueueRef.current = null;
+      camera.stop();
+    };
     // Camera start/stop is intentionally tied to the exercise identity only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exercise.id]);
@@ -239,6 +281,7 @@ export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; ch
       <aside className="monitor-panel" aria-label="Live exercise metadata">
         {children}
         {state.message && <p className="monitor-error">{state.message}</p>}
+        {saveError && <p className="monitor-error" role="status">{saveError}</p>}
         <div className="monitor-panel-header">
           <span className="camera-ready"><span className="status-dot ready" /> Private local session</span>
           <span className="monitor-live-state" aria-live="polite"><span className={`status-dot ${state.status}`} /> {statusLabel(state.status)}</span>

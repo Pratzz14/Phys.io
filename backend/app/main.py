@@ -5,6 +5,7 @@ import logging
 import mimetypes
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.middleware.gzip import GZipMiddleware
@@ -18,11 +19,13 @@ from sqlalchemy.orm import Session
 
 from .config import ROOT_DIR, UPLOAD_PATH
 from .classifier_runtime import ClassifierRegistry
-from .db import Profile, User, get_db, init_db
+from .db import ExerciseSession, Profile, User, get_db, init_db
 from .schemas import (
     AuthResponse,
     ClassifierPredictionRequest,
     CsrfResponse,
+    ExerciseSessionResponse,
+    ExerciseSessionUpdate,
     HealthResponse,
     LoginRequest,
     ProfileResponse,
@@ -261,6 +264,102 @@ def delete_profile_image(request: Request, user: User = Depends(current_user), d
         path = UPLOAD_PATH / previous
         path.unlink(missing_ok=True)
     return profile_response(user, profile)
+
+
+def utc_naive(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def utc_aware(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def exercise_session_response(record: ExerciseSession) -> ExerciseSessionResponse:
+    return ExerciseSessionResponse(
+        session_id=record.id,
+        exercise_id=record.exercise_id,
+        started_at=utc_aware(record.started_at),
+        last_active_at=utc_aware(record.last_active_at),
+        active_seconds=record.active_seconds,
+        repetitions=record.repetitions,
+        average_accuracy=record.average_accuracy,
+        accuracy_sample_count=record.accuracy_sample_count,
+        revision=record.revision,
+    )
+
+
+@app.put("/api/exercise-sessions/{session_id}", response_model=ExerciseSessionResponse)
+def upsert_exercise_session(
+    session_id: uuid.UUID,
+    payload: ExerciseSessionUpdate,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> ExerciseSessionResponse:
+    require_csrf(request, db)
+    record_id = str(session_id)
+    record = db.get(ExerciseSession, record_id)
+    if record and record.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Exercise session not found")
+    payload_started_at = utc_naive(payload.started_at)
+    payload_last_active_at = utc_naive(payload.last_active_at)
+    if record:
+        if payload.revision <= record.revision:
+            return exercise_session_response(record)
+        if payload_started_at != utc_naive(record.started_at):
+            raise HTTPException(status_code=409, detail="Session start cannot change")
+        if payload.exercise_id != record.exercise_id:
+            raise HTTPException(status_code=409, detail="Session exercise cannot change")
+        if (
+            payload_last_active_at < utc_naive(record.last_active_at)
+            or payload.active_seconds < record.active_seconds
+            or payload.repetitions < record.repetitions
+            or payload.accuracy_sample_count < record.accuracy_sample_count
+        ):
+            raise HTTPException(status_code=409, detail="Session metrics cannot move backwards")
+        record.exercise_id = payload.exercise_id
+        record.last_active_at = payload_last_active_at
+        record.active_seconds = payload.active_seconds
+        record.repetitions = payload.repetitions
+        record.average_accuracy = payload.average_accuracy
+        record.accuracy_sample_count = payload.accuracy_sample_count
+        record.revision = payload.revision
+    else:
+        record = ExerciseSession(
+            id=record_id,
+            user_id=user.id,
+            exercise_id=payload.exercise_id,
+            started_at=payload_started_at,
+            last_active_at=payload_last_active_at,
+            active_seconds=payload.active_seconds,
+            repetitions=payload.repetitions,
+            average_accuracy=payload.average_accuracy,
+            accuracy_sample_count=payload.accuracy_sample_count,
+            revision=payload.revision,
+        )
+        db.add(record)
+    db.commit()
+    return exercise_session_response(record)
+
+
+@app.get("/api/exercise-sessions", response_model=list[ExerciseSessionResponse])
+def list_exercise_sessions(
+    since: datetime,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> list[ExerciseSessionResponse]:
+    if since.tzinfo is None or since.utcoffset() is None:
+        raise HTTPException(status_code=422, detail="since must include a timezone")
+    records = db.scalars(
+        select(ExerciseSession)
+        .where(ExerciseSession.user_id == user.id, ExerciseSession.last_active_at >= utc_naive(since))
+        .order_by(ExerciseSession.last_active_at.asc())
+    ).all()
+    return [exercise_session_response(record) for record in records]
 
 
 @app.post("/api/classifiers/{model_id}/predict")

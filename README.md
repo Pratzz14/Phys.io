@@ -12,6 +12,7 @@ During live exercises, self-hosted MediaPipe assets detect 33 pose landmarks in 
 - **Personalized dashboard** — See a time-aware greeting, profile summary, pain-range overview, camera-readiness guidance, and quick links to recommended exercises.
 - **Live exercise monitoring** — Practice **Hands Up / Hands Down** and **Hands Side / Hands Up** using full-body pose tracking and trained local classifiers.
 - **Real-time movement feedback** — View the detected position, next target position, confidence score, visibility prompts, and completed repetition count.
+- **Long-term exercise progress** — Automatically save qualifying live-session summaries and compare repetitions, average displayed accuracy, and active tracking time across a rolling 12-week dashboard view.
 - **Guided movement library** — Follow illustrated steps and safety checklists for neck release, elbow flow, knee control, and ankle mobility, with optional reference videos.
 - **Local-first pose processing** — MediaPipe inference runs in a web worker using runtime, WebAssembly, and model files served by Phys.io rather than a runtime CDN.
 - **Local storage and API** — FastAPI, SQLAlchemy, and SQLite provide authenticated profile storage, CSRF-protected requests, image handling, and scikit-learn classifier inference.
@@ -98,6 +99,8 @@ npm audit --omit=dev
 ## Local data and privacy
 
 The SQLite database is stored in `backend/data/`, and uploaded profile images are stored in `backend/uploads/`; both locations are ignored by Git. Camera frames never leave the browser. MediaPipe generates pose landmarks on-device, and only those numeric landmarks are sent to the same-origin local FastAPI process for posture classification. Phys.io does not send them to a cloud service.
+
+After a live visit reaches its first completed repetition, Phys.io stores only a compact derived summary in local SQLite: the exercise identifier, timestamps, repetitions, average displayed classifier accuracy, accuracy sample count, and valid-tracking duration. Video, camera images, pose landmarks, and detailed pose timelines are never added to exercise history. Visits with no completed repetitions are discarded.
 
 The MediaPipe runtime, WebAssembly files, and Full pose model are served from `frontend/public/mediapipe`, so live monitoring requires no runtime CDN request. Model provenance and checksums are documented in `frontend/public/POSE_MODEL_ASSETS.md`.
 

@@ -1,4 +1,4 @@
-import type { ClassifierPrediction, PoseWorldLandmark, Profile, User } from "./types";
+import type { ClassifierPrediction, ExerciseSessionSummary, ExerciseSessionUpdate, PoseWorldLandmark, Profile, User } from "./types";
 
 let csrfToken = "";
 
@@ -84,4 +84,20 @@ export function predictClassifier(
     body: JSON.stringify({ world_landmarks: worldLandmarks }),
     signal,
   });
+}
+
+export function saveExerciseSession(
+  session: ExerciseSessionSummary,
+  keepalive = false,
+): Promise<ExerciseSessionSummary> {
+  const { session_id: sessionId, ...payload } = session;
+  return request<ExerciseSessionSummary>(`/api/exercise-sessions/${encodeURIComponent(sessionId)}`, {
+    method: "PUT",
+    body: JSON.stringify(payload satisfies ExerciseSessionUpdate),
+    keepalive,
+  });
+}
+
+export function getExerciseSessions(since: Date): Promise<ExerciseSessionSummary[]> {
+  return request<ExerciseSessionSummary[]>(`/api/exercise-sessions?since=${encodeURIComponent(since.toISOString())}`);
 }

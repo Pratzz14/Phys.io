@@ -110,6 +110,14 @@ export function RepeatIcon(props: IconProps) {
   return <Icon {...props}><path d="M17 7h3V4m0 3-3-3M7 17H4v3m0-3 3 3M20 7h-9a4 4 0 0 0-4 4m-3 6h9a4 4 0 0 0 4-4" /></Icon>;
 }
 
+export function TargetIcon(props: IconProps) {
+  return <Icon {...props}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="1" /></Icon>;
+}
+
+export function ClockIcon(props: IconProps) {
+  return <Icon {...props}><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3.5 2" /></Icon>;
+}
+
 export function ArrowUpIcon(props: IconProps) {
   return <Icon {...props}><path d="M12 19V5m-5 5 5-5 5 5" /></Icon>;
 }
