@@ -17,7 +17,7 @@ function Redirect({ to }: { to: string }) {
 
 export function App() {
   const { user, loading } = useAuth(); const path = usePath();
-  if (loading) return <div className="loading-screen">Preparing your space…</div>;
+  if (loading) return <div className="loading-screen">Preparing your space{"\u2026"}</div>;
   if (!user && path !== "/login" && path !== "/register") return <Redirect to="/login" />;
   if (user && (path === "/login" || path === "/register")) return <Redirect to="/dashboard" />;
   if (path === "/login") return <LoginPage />;

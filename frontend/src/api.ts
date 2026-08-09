@@ -1,4 +1,4 @@
-import type { Profile, User } from "./types";
+import type { ClassifierPrediction, PoseWorldLandmark, Profile, User } from "./types";
 
 let csrfToken = "";
 
@@ -72,4 +72,16 @@ export async function uploadProfileImage(file: File): Promise<Profile> {
 
 export async function deleteProfileImage(): Promise<Profile> {
   return request<Profile>("/api/profile/image", { method: "DELETE" });
+}
+
+export function predictClassifier(
+  modelId: string,
+  worldLandmarks: PoseWorldLandmark[],
+  signal?: AbortSignal,
+): Promise<ClassifierPrediction> {
+  return request<ClassifierPrediction>(`/api/classifiers/${encodeURIComponent(modelId)}/predict`, {
+    method: "POST",
+    body: JSON.stringify({ world_landmarks: worldLandmarks }),
+    signal,
+  });
 }

@@ -4,12 +4,17 @@ import { App } from "./App";
 import { Router } from "./router";
 import { ExercisesPage } from "./pages/ExercisesPage";
 import { ExercisePage } from "./pages/ExercisePage";
-import { nextPositionFor } from "./components/ExerciseMonitor";
+import { advanceRepetition, nextPositionFor, predictionGuidance } from "./components/ExerciseMonitor";
 import { exercises } from "./data/exercises";
 
 vi.mock("./api", () => ({
   refreshCsrf: vi.fn().mockResolvedValue("csrf"),
   getMe: vi.fn().mockRejectedValue(new Error("not authenticated")),
+  predictClassifier: vi.fn(),
+}));
+
+vi.mock("./pose/usePoseCamera", () => ({
+  usePoseCamera: () => ({ status: "running", error: null, start: vi.fn(), stop: vi.fn() }),
 }));
 
 test("renders the login surface for an unauthenticated visitor", async () => {
@@ -29,13 +34,29 @@ test("labels unsupported classifiers as guidance only", () => {
 test("maps each classifier position to the next target", () => {
   expect(nextPositionFor("Up")).toBe("Down");
   expect(nextPositionFor("Down")).toBe("Up");
-  expect(nextPositionFor("To sky")).toBe("Toe touch");
-  expect(nextPositionFor("Toe touch")).toBe("To sky");
+  expect(nextPositionFor("Side", ["Side", "Up"])).toBe("Up");
+  expect(nextPositionFor("Up", ["Side", "Up"])).toBe("Side");
   expect(nextPositionFor("Waiting")).toBe("-");
 });
 
+test("explains why a camera-ready pose cannot be classified", () => {
+  expect(predictionGuidance(false, 0)).toBe("Show shoulders & hips");
+  expect(predictionGuidance(false, 0.45)).toBe("Keep full body visible");
+  expect(predictionGuidance(true, 1)).toBeNull();
+});
+
+test("counts only a complete return to the starting endpoint", () => {
+  const empty = { start: null, current: null, transitions: 0, repetitions: 0, target: "-" };
+  const down = advanceRepetition(empty, "Down", ["Up", "Down"]);
+  const up = advanceRepetition(down, "Up", ["Up", "Down"]);
+  const completed = advanceRepetition(up, "Down", ["Up", "Down"]);
+  expect(down.target).toBe("Up");
+  expect(up.repetitions).toBe(0);
+  expect(completed.repetitions).toBe(1);
+});
+
 test("keeps live monitoring focused on progress and removes the setup aside", () => {
-  window.history.pushState({}, "", "/exercise/shoulder-mobility");
+  window.history.pushState({}, "", "/exercise/hands-up-down");
   render(<Router><ExercisePage /></Router>);
   expect(screen.getByText("Current position")).toBeInTheDocument();
   expect(screen.getByText("Next position")).toBeInTheDocument();
@@ -44,10 +65,16 @@ test("keeps live monitoring focused on progress and removes the setup aside", ()
   const camera = screen.getByLabelText(/live exercise camera view/i);
   const metadata = screen.getByRole("complementary", { name: /live exercise metadata/i });
   expect(camera.compareDocumentPosition(metadata) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(within(metadata).getByRole("heading", { name: /shoulder mobility/i })).toBeInTheDocument();
+  expect(within(metadata).getByRole("heading", { name: /hands up \/ hands down/i })).toBeInTheDocument();
   expect(within(metadata).getByRole("link", { name: /back to exercises/i })).toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: /shoulder practice/i })).not.toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: /before you begin/i })).not.toBeInTheDocument();
+});
+
+test("keeps legacy live exercise URLs as aliases", () => {
+  window.history.pushState({}, "", "/exercise/back-toe-touch");
+  render(<Router><ExercisePage /></Router>);
+  expect(screen.getByRole("heading", { name: /hands side \/ hands up/i })).toBeInTheDocument();
 });
 
 test("keeps setup guidance for guidance-only exercises", () => {

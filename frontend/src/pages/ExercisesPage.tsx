@@ -4,7 +4,7 @@ import { ArrowIcon, BackIcon, ExerciseIcon } from "../components/Icons";
 import { MovementVisual } from "../components/MovementVisual";
 import type { PoseVariant } from "../types";
 
-const poseFor = (id: string): PoseVariant => id === "back-toe-touch" ? "back" : id === "neck-release" ? "neck" : id === "knee-control" ? "knee" : id === "ankle-mobility" ? "ankle" : id === "elbow-flow" ? "elbow" : "shoulder";
+const poseFor = (id: string): PoseVariant => id === "neck-release" ? "neck" : id === "knee-control" ? "knee" : id === "ankle-mobility" ? "ankle" : id === "elbow-flow" ? "elbow" : "shoulder";
 
 export function ExercisesPage() {
   return (

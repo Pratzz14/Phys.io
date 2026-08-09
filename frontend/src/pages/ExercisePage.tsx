@@ -7,7 +7,12 @@ import { PoseSequence } from "../components/MovementVisual";
 export function ExercisePage() {
   const path = usePath();
   const exerciseId = path.split("/").filter(Boolean).pop();
-  const exercise = exercises.find((item) => item.id === exerciseId);
+  const aliases: Record<string, string> = {
+    "shoulder-mobility": "hands-up-down",
+    "back-toe-touch": "hands-side-up",
+  };
+  const resolvedExerciseId = exerciseId ? aliases[exerciseId] ?? exerciseId : exerciseId;
+  const exercise = exercises.find((item) => item.id === resolvedExerciseId);
   if (!exercise) return <div className="page-empty"><h1>Exercise not found</h1><Link className="secondary-button" to="/exercises"><BackIcon size={18} /> Browse exercises</Link></div>;
 
   if (exercise.mode === "live") {

@@ -2,24 +2,34 @@ import type { Exercise } from "../types";
 
 export const exercises: Exercise[] = [
   {
-    id: "shoulder-mobility",
-    title: "Shoulder mobility",
-    description: "Shoulder up and down",
+    id: "hands-up-down",
+    title: "Hands Up / Hands Down",
+    description: "Raise and lower both arms with control",
     area: "Shoulder",
     accent: "sage",
     mode: "live",
-    model: "shoulder",
-    videoUrl: "https://www.youtube.com/embed/FnOq_VZm-nk",
+    classifier: {
+      modelId: "hands-up-vs-down.joblib",
+      endpoints: [
+        { classLabel: "Hands Up", displayLabel: "Up" },
+        { classLabel: "Hands Down", displayLabel: "Down" },
+      ],
+    },
   },
   {
-    id: "back-toe-touch",
-    title: "Back toe touch",
-    description: "Controlled back mobility",
-    area: "Back",
+    id: "hands-side-up",
+    title: "Hands Side / Hands Up",
+    description: "Move both arms from shoulder height to overhead",
+    area: "Shoulder",
     accent: "coral",
     mode: "live",
-    model: "back",
-    videoUrl: "https://www.youtube.com/embed/Ip0S-HHQIoc",
+    classifier: {
+      modelId: "hands-side-vs-up.joblib",
+      endpoints: [
+        { classLabel: "Hands Side", displayLabel: "Side" },
+        { classLabel: "Hands Up", displayLabel: "Up" },
+      ],
+    },
   },
   {
     id: "neck-release",

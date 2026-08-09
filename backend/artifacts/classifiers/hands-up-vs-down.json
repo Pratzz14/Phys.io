@@ -1,0 +1,735 @@
+{
+  "artifactVersion": 1,
+  "taskId": "hands-up-vs-down",
+  "classes": [
+    "Hands Up",
+    "Hands Down"
+  ],
+  "featureSchema": "mediapipe-33-world-normalized-position-angle-v1",
+  "featureCount": 79,
+  "visibilityThreshold": 0.2,
+  "minimumFeatureCoverage": 0.6,
+  "algorithm": "LogisticRegression",
+  "parameters": {
+    "model__C": 0.1
+  },
+  "evaluation": {
+    "taskId": "hands-up-vs-down",
+    "classes": [
+      "Hands Up",
+      "Hands Down"
+    ],
+    "evaluationUnit": "stable-hold",
+    "grouping": "recording",
+    "foldCount": 4,
+    "candidateResults": {
+      "LogisticRegression": {
+        "folds": [
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                2,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 2
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 6,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 5,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                7
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 7
+              }
+            },
+            "sampleCount": 8,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                3,
+                0
+              ],
+              [
+                0,
+                9
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 3
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 9
+              }
+            },
+            "sampleCount": 12,
+            "rocAuc": 1.0
+          }
+        ],
+        "meanBalancedAccuracy": 1.0,
+        "stdBalancedAccuracy": 0.0,
+        "meanMacroF1": 1.0
+      },
+      "RBF-SVM": {
+        "folds": [
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                2,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 2
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 6,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 5,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                7
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 7
+              }
+            },
+            "sampleCount": 8,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 0.5,
+            "macroF1": 0.42857142857142855,
+            "confusionMatrix": [
+              [
+                0,
+                3
+              ],
+              [
+                0,
+                9
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 3
+              },
+              "Hands Down": {
+                "precision": 0.75,
+                "recall": 1.0,
+                "f1": 0.8571428571428571,
+                "support": 9
+              }
+            },
+            "sampleCount": 12,
+            "rocAuc": 1.0
+          }
+        ],
+        "meanBalancedAccuracy": 0.875,
+        "stdBalancedAccuracy": 0.21650635094610965,
+        "meanMacroF1": 0.8571428571428571
+      },
+      "RandomForest": {
+        "folds": [
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                2,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 2
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 6,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 5,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                7
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 7
+              }
+            },
+            "sampleCount": 8,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                3,
+                0
+              ],
+              [
+                0,
+                9
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 3
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 9
+              }
+            },
+            "sampleCount": 12,
+            "rocAuc": 1.0
+          }
+        ],
+        "meanBalancedAccuracy": 1.0,
+        "stdBalancedAccuracy": 0.0,
+        "meanMacroF1": 1.0
+      },
+      "HistGradientBoosting": {
+        "folds": [
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                2,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 2
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 6,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 5,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 0.5,
+            "macroF1": 0.4666666666666667,
+            "confusionMatrix": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                7
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 0.875,
+                "recall": 1.0,
+                "f1": 0.9333333333333333,
+                "support": 7
+              }
+            },
+            "sampleCount": 8,
+            "rocAuc": 0.2857142857142857
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                3,
+                0
+              ],
+              [
+                0,
+                9
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 3
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 9
+              }
+            },
+            "sampleCount": 12,
+            "rocAuc": 1.0
+          }
+        ],
+        "meanBalancedAccuracy": 0.875,
+        "stdBalancedAccuracy": 0.21650635094610965,
+        "meanMacroF1": 0.8666666666666667
+      },
+      "kNN": {
+        "folds": [
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                2,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 2
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 6,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                4
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 4
+              }
+            },
+            "sampleCount": 5,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                1,
+                0
+              ],
+              [
+                0,
+                7
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 1
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 7
+              }
+            },
+            "sampleCount": 8,
+            "rocAuc": 1.0
+          },
+          {
+            "balancedAccuracy": 1.0,
+            "macroF1": 1.0,
+            "confusionMatrix": [
+              [
+                3,
+                0
+              ],
+              [
+                0,
+                9
+              ]
+            ],
+            "perClass": {
+              "Hands Up": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 3
+              },
+              "Hands Down": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 9
+              }
+            },
+            "sampleCount": 12,
+            "rocAuc": 1.0
+          }
+        ],
+        "meanBalancedAccuracy": 1.0,
+        "stdBalancedAccuracy": 0.0,
+        "meanMacroF1": 1.0
+      }
+    },
+    "dummyBaseline": {
+      "balancedAccuracy": 0.5,
+      "macroF1": 0.43636363636363634,
+      "confusionMatrix": [
+        [
+          0,
+          7
+        ],
+        [
+          0,
+          24
+        ]
+      ],
+      "perClass": {
+        "Hands Up": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7
+        },
+        "Hands Down": {
+          "precision": 0.7741935483870968,
+          "recall": 1.0,
+          "f1": 0.8727272727272727,
+          "support": 24
+        }
+      },
+      "sampleCount": 31,
+      "rocAuc": 0.4791666666666667
+    },
+    "selectedAlgorithm": "LogisticRegression",
+    "selectedParameters": {
+      "model__C": 0.1
+    },
+    "labelCounts": {
+      "Hands Up": 61,
+      "Hands Down": 285
+    },
+    "holdCounts": {
+      "Hands Up": 7,
+      "Hands Down": 24
+    },
+    "warnings": [
+      "Hands Up Down/2026-08-01T05-38-41-231Z.jsonl: raw recording is missing; skipped.",
+      "Hands Up Down/2026-07-30T07-59-12-066Z.jsonl: raw recording is missing; skipped."
+    ]
+  },
+  "data": {
+    "frameCount": 346,
+    "holdCount": 31,
+    "sourceFiles": [
+      "Hands Side/2026-08-01T08-55-15-997Z.jsonl",
+      "Hands Side/2026-08-01T08-53-02-931Z.jsonl",
+      "Hands Up Down/2026-08-01T05-37-48-621Z.jsonl",
+      "Hands Up Down/2026-08-01T05-36-58-647Z.jsonl",
+      "Hands Up Down/2026-07-30T13-56-46-607Z.jsonl",
+      "Hands Up Down/2026-07-30T11-21-53-467Z.jsonl",
+      "Hands Up Down/2026-07-30T11-21-15-668Z.jsonl",
+      "Hands Up Down/2026-07-30T11-20-33-804Z.jsonl"
+    ],
+    "rawSha256": {
+      "Hands Side/2026-08-01T08-55-15-997Z.jsonl": "cc45292601f8b08ac1e9cfeb599ee0d235f7e33bd7b7dab346e15cfd250c5275",
+      "Hands Side/2026-08-01T08-53-02-931Z.jsonl": "2001da127b0e1856d6b1fe600b27cbdc9f618beb8bbab203be281ff913dd8c9d",
+      "Hands Up Down/2026-08-01T05-37-48-621Z.jsonl": "345a7e54d62af0b9b7bfe01a6679a2d7ea35f5e16ea7e1b6bfba1a2e2e6b1d3a",
+      "Hands Up Down/2026-08-01T05-36-58-647Z.jsonl": "f0da5ccaaf1672dfdf190e919e032b54c85ccb8d142c329c7dfc3b67d3f40703",
+      "Hands Up Down/2026-07-30T13-56-46-607Z.jsonl": "456ef791de684727eb0aec55ff8f1ff249d94ad11d0c628e32edb1406cad7db6",
+      "Hands Up Down/2026-07-30T11-21-53-467Z.jsonl": "764ea25baf4ac8e9239e1f64da6ef6659400214a73a5057b85348953b866eb65",
+      "Hands Up Down/2026-07-30T11-21-15-668Z.jsonl": "6053e09fc68dc7cb9cdf8c0ec0683208af7ced1edb8d874fe4bd7e47f31ef96c",
+      "Hands Up Down/2026-07-30T11-20-33-804Z.jsonl": "8e73a9b988e7f5f5642e7436c2e4e18c7f3a6187068cc91f81a7efbe8f37669a"
+    }
+  },
+  "createdAt": "2026-08-09T05:36:55.645322+00:00",
+  "python": "3.13.5"
+}

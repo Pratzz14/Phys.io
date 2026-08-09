@@ -130,3 +130,68 @@ def test_security_headers_are_present(client: TestClient) -> None:
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["x-frame-options"] == "DENY"
     assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+
+
+def _world_landmarks() -> list[dict[str, float]]:
+    landmarks = [
+        {
+            "x": ((index % 5) - 2) * 0.08,
+            "y": (index - 16) * 0.04,
+            "z": ((index % 3) - 1) * 0.03,
+            "visibility": 1.0,
+            "presence": 1.0,
+        }
+        for index in range(33)
+    ]
+    landmarks[11].update(x=0.25, y=-0.5, z=0.0)
+    landmarks[12].update(x=-0.25, y=-0.5, z=0.0)
+    landmarks[23].update(x=0.18, y=0.0, z=0.02)
+    landmarks[24].update(x=-0.18, y=0.0, z=-0.02)
+    return landmarks
+
+
+def test_classifier_prediction_is_local_authenticated_and_allowlisted(client: TestClient) -> None:
+    assert client.post(
+        "/api/classifiers/hands-up-vs-down.joblib/predict",
+        json={"world_landmarks": _world_landmarks()},
+    ).status_code == 401
+
+    token = csrf(client)
+    registered = client.post(
+        "/api/auth/register",
+        headers={"X-CSRF-Token": token},
+        json={
+            "name": "poseuser",
+            "email": "pose@example.com",
+            "password": "a-strong-local-password",
+            "confirm_password": "a-strong-local-password",
+        },
+    )
+    token = registered.json()["csrf_token"]
+    headers = {"X-CSRF-Token": token}
+
+    for model_id in ("hands-up-vs-down.joblib", "hands-side-vs-up.joblib"):
+        response = client.post(
+            f"/api/classifiers/{model_id}/predict",
+            headers=headers,
+            json={"world_landmarks": _world_landmarks()},
+        )
+        assert response.status_code == 200
+        prediction = response.json()
+        assert prediction["modelId"] == model_id
+        assert prediction["classes"]
+        assert 0 <= prediction["featureCoverage"] <= 1
+
+    rejected = client.post(
+        "/api/classifiers/unknown.joblib/predict",
+        headers=headers,
+        json={"world_landmarks": _world_landmarks()},
+    )
+    assert rejected.status_code == 422
+
+    malformed = client.post(
+        "/api/classifiers/hands-up-vs-down.joblib/predict",
+        headers=headers,
+        json={"world_landmarks": _world_landmarks()[:-1]},
+    )
+    assert malformed.status_code == 422

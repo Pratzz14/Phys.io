@@ -70,3 +70,18 @@ class HealthResponse(BaseModel):
     status: str
     database: str
 
+
+class ClassifierLandmark(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    x: float | None = None
+    y: float | None = None
+    z: float | None = None
+    visibility: float | None = None
+    presence: float | None = None
+
+
+class ClassifierPredictionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    world_landmarks: list[ClassifierLandmark] = Field(min_length=33, max_length=33)

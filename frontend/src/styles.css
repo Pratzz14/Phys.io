@@ -58,7 +58,8 @@ button { cursor: pointer; }
 .mobile-nav { display: none; }
 
 .page-container { width: min(1560px, calc(100% - 84px)); margin: 0 auto; }
-.dashboard-page, .exercise-page, .form-page { padding-top: 46px; padding-bottom: 70px; }
+.dashboard-page { padding-top: clamp(24px, 4vh, 46px); padding-bottom: clamp(32px, 6vh, 70px); }
+.exercise-page, .form-page { padding-top: 46px; padding-bottom: 70px; }
 .welcome-row, .page-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .eyebrow { margin: 0 0 8px; color: var(--mint); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; line-height: 1.4; font-weight: 800; }
 h1, h2, h3, p { margin-top: 0; }
@@ -169,8 +170,9 @@ dt { color: var(--muted); font-size: 12px; } dd { margin: 0; color: var(--text);
 .monitor-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); grid-template-rows: minmax(0, 1fr); gap: 18px; height: 100%; min-height: 0; }
 .monitor-wrap { position: relative; min-width: 0; min-height: 0; height: 100%; overflow: hidden; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: #020c18; box-shadow: var(--shadow); }
 .monitor-wrap::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border: 1px solid rgba(85, 216, 194, .08); border-radius: inherit; }
-.monitor-canvas { width: 100%; height: 100%; min-height: 0; display: grid; place-items: center; overflow: hidden; background: #020c18; }
-.monitor-canvas canvas { display: block; width: 100% !important; height: 100% !important; max-width: 100%; max-height: 100%; object-fit: cover; }
+.monitor-canvas { position: relative; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #020c18; }
+.monitor-canvas video, .monitor-canvas canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.monitor-canvas canvas { pointer-events: none; }
 .monitor-panel { min-width: 0; min-height: 0; height: 100%; display: flex; flex-direction: column; gap: 12px; padding: 18px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: linear-gradient(145deg, rgba(9, 32, 57, .95), rgba(5, 22, 39, .95)); }
 .monitor-panel-intro { flex: none; min-width: 0; }
 .live-heading-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
@@ -279,6 +281,33 @@ dt { color: var(--muted); font-size: 12px; } dd { margin: 0; color: var(--text);
 
 .loading-screen, .page-empty { min-height: 60vh; display: grid; place-items: center; align-content: center; gap: 8px; padding: 40px; color: var(--muted); text-align: center; }.page-empty h1 { margin-bottom: 0; font-size: 38px; }.page-empty p { max-width: 520px; margin: 0; }.loading-pulse { color: var(--mint); animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+
+@media (min-width: 1151px) and (max-height: 820px) {
+  .dashboard-page { padding-top: 20px; padding-bottom: 24px; }
+  .dashboard-page .welcome-row { margin-bottom: 16px; }
+  .dashboard-page .welcome-row h1 { margin-bottom: 8px; font-size: clamp(36px, 3vw, 46px); }
+  .dashboard-page .lead { font-size: 14px; }
+  .dashboard-grid { gap: 16px; }
+  .monitor-card { padding: 18px 18px 0; }
+  .monitor-illustration { min-height: 300px; height: 38dvh; max-height: 340px; margin: 14px 0; }
+  .monitor-footer { gap: 16px; padding-bottom: 14px; }
+  .monitor-hints > div { padding-top: 12px; padding-bottom: 14px; }
+  .dashboard-side { gap: 12px; }
+  .profile-card, .recommendations { padding: 16px; }
+  .profile-details { margin: 12px 0; }
+  .profile-details div { padding: 7px 0; }
+  .pain-section { padding-top: 12px; }
+  .pain-heading { margin-bottom: 8px; }
+  .pain-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+  .pain-row { grid-template-columns: 62px minmax(0, 1fr); gap: 8px; margin: 8px 0; }
+  .pain-note { margin-top: 10px; }
+  .recommendations .section-heading-title { margin-bottom: 10px; }
+  .exercise-row { gap: 6px; }
+  .exercise-card { grid-template-columns: 44px minmax(0, 1fr) auto 18px; padding: 6px; }
+  .exercise-art { width: 44px; height: 44px; }
+  .exercise-art .pose-svg-compact { width: 42px; height: 42px; }
+  .text-link { margin-top: 10px; }
+}
 
 @media (max-width: 1150px) {
   .topbar { padding-inline: 28px; }

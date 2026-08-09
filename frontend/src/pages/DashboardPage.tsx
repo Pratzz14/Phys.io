@@ -5,36 +5,27 @@ import { exercises } from "../data/exercises";
 import type { Profile } from "../types";
 import { ArrowIcon, CameraIcon, ExerciseIcon, InfoIcon, LockIcon, SunIcon, UserIcon } from "../components/Icons";
 import { MovementVisual } from "../components/MovementVisual";
-
-const painItems = [
-  ["Shoulder", "shoulder_pain"],
-  ["Lower back", "back_pain"],
-  ["Elbow", "elbow_pain"],
-  ["Knees", "knee_pain"],
-  ["Ankles", "ankle_pain"],
-] as const;
-
-function painPercent(value: number) {
-  return Math.min(96, Math.max(4, (value / 50) * 100));
-}
+import { PAIN_MAX, painAreas, painPercent } from "../data/painAreas";
+import { greetingForHour } from "../utils/timeGreeting";
 
 export function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
+  const greeting = greetingForHour(new Date().getHours());
 
   useEffect(() => {
     void getProfile().then(setProfile).catch((err) => setError(err instanceof Error ? err.message : "Unable to load profile"));
   }, []);
 
   if (error) return <div className="page-empty"><h1>We could not load your profile.</h1><p>{error}</p></div>;
-  if (!profile) return <div className="loading-screen">Preparing your dashboard<span className="loading-pulse">…</span></div>;
+  if (!profile) return <div className="loading-screen">Preparing your dashboard<span className="loading-pulse">{"\u2026"}</span></div>;
 
   return (
     <div className="dashboard-page page-container">
       <section className="welcome-row">
         <div>
           <p className="eyebrow">Your movement space</p>
-          <h1>Good morning, {profile.name}</h1>
+          <h1>{greeting}, {profile.name}</h1>
           <p className="lead">Move with confidence, one steady repetition at a time.</p>
         </div>
         <Link className="secondary-button" to="/profile">Update profile <ArrowIcon size={18} /></Link>
@@ -52,7 +43,7 @@ export function DashboardPage() {
           </div>
           <div className="monitor-footer">
             <div className="monitor-footer-copy"><LockIcon size={17} /><p>Use your camera for real-time feedback. Your video stays on this device.</p></div>
-            <Link className="primary-button" to="/exercise/shoulder-mobility"><CameraIcon size={20} /> Start monitoring <ArrowIcon size={18} /></Link>
+            <Link className="primary-button" to="/exercise/hands-up-down"><CameraIcon size={20} /> Start monitoring <ArrowIcon size={18} /></Link>
           </div>
           <div className="monitor-hints">
             <div><UserIcon size={21} /><span><strong>Full body tracking</strong><small>Keep your whole body in view</small></span></div>
@@ -74,11 +65,14 @@ export function DashboardPage() {
             </dl>
             <div className="pain-section">
               <div className="pain-heading"><h3>Pain range</h3><span><i className="legend low" /> Low <i className="legend high" /> High</span></div>
-              {painItems.map(([label, key]) => {
-                const value = profile[key];
-                const percent = painPercent(value);
-                return <div className="pain-row" key={key}><span>{label}</span><div className="pain-track"><span style={{ width: `${percent}%` }} /><b style={{ left: `${percent}%` }} /></div></div>;
-              })}
+              <div className="pain-list">
+                {painAreas.map(({ label, key }) => {
+                  const value = profile[key];
+                  const percent = painPercent(value);
+                  const markerPosition = `clamp(7.5px, ${percent}%, calc(100% - 7.5px))`;
+                  return <div className="pain-row" key={key} aria-label={`${label}: ${value} out of ${PAIN_MAX}`}><span>{label}</span><div className="pain-track"><span style={{ width: `${percent}%` }} /><b style={{ left: markerPosition }} /></div></div>;
+                })}
+              </div>
               <p className="pain-note"><InfoIcon size={15} /> Update your pain level anytime in your profile.</p>
             </div>
           </section>
@@ -87,7 +81,7 @@ export function DashboardPage() {
             <div className="section-heading-title"><ExerciseIcon size={21} /><div><p className="eyebrow">Recommended exercises</p><h2>Build a gentle rhythm</h2></div></div>
             <div className="exercise-row">
               {exercises.slice(0, 3).map((exercise) => <Link to={`/exercise/${exercise.id}`} className="exercise-card" key={exercise.id}>
-                <div className={`exercise-art ${exercise.accent}`}><MovementVisual variant={exercise.id === "back-toe-touch" ? "back" : exercise.id === "neck-release" ? "neck" : "shoulder"} compact /></div>
+                <div className={`exercise-art ${exercise.accent}`}><MovementVisual variant={exercise.id === "neck-release" ? "neck" : "shoulder"} compact /></div>
                 <div><h3>{exercise.title}</h3><p>{exercise.description}</p></div>
                 <span className={`status-badge ${exercise.mode === "live" ? "live" : "guided"}`}><span className="status-dot" />{exercise.mode === "live" ? "Live" : "Guided"}</span>
                 <ArrowIcon className="exercise-arrow" size={18} />

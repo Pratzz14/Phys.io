@@ -52,15 +52,58 @@ export interface Exercise {
   area: string;
   accent: string;
   mode: "live" | "guidance";
-  model?: "shoulder" | "back";
+  classifier?: ExerciseClassifier;
   videoUrl?: string;
   guidance?: ExerciseGuidance;
+}
+
+export interface ClassifierEndpoint {
+  classLabel: string;
+  displayLabel: string;
+}
+
+export interface ExerciseClassifier {
+  modelId: "hands-up-vs-down.joblib" | "hands-side-vs-up.joblib";
+  endpoints: readonly [ClassifierEndpoint, ClassifierEndpoint];
+}
+
+export interface PoseLandmark {
+  x: number;
+  y: number;
+  z?: number;
+  visibility?: number;
+  presence?: number;
+}
+
+export interface PoseWorldLandmark {
+  x: number;
+  y: number;
+  z: number;
+  visibility: number;
+  presence: number;
+}
+
+export interface PoseFrameResult {
+  landmarks: PoseLandmark[];
+  worldLandmarks: PoseWorldLandmark[];
+  timestampMs: number;
+}
+
+export interface ClassifierPrediction {
+  modelId: string;
+  classes: string[];
+  valid: boolean;
+  featureCoverage: number;
+  label: string | null;
+  confidence: number | null;
+  probabilities: Record<string, number>;
 }
 
 export interface MonitorState {
   status: "idle" | "loading" | "ready" | "running" | "error";
   message?: string;
   label: string;
+  target: string;
   repetitions: number;
   accuracy: number;
 }

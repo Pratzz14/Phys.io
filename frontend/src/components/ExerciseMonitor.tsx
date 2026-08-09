@@ -1,22 +1,60 @@
-import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
-import type { Exercise, MonitorState } from "../types";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { predictClassifier } from "../api";
+import { usePoseCamera } from "../pose/usePoseCamera";
+import type { Exercise, MonitorState, PoseFrameResult } from "../types";
 
-declare global {
-  interface Window {
-    p5: any;
-    ml5: any;
-  }
+const PREDICTION_INTERVAL_MS = 200;
+const STABLE_POSITION_MS = 500;
+const STALE_POSITION_MS = 750;
+const MIN_CONFIDENCE = 0.65;
+const HISTORY_SIZE = 8;
+
+interface MotionProgress {
+  start: string | null;
+  current: string | null;
+  transitions: number;
+  repetitions: number;
+  target: string;
 }
 
-const scriptLoads = new Map<string, Promise<void>>();
-
-export function nextPositionFor(label: string): string {
-  if (label === "Up") return "Down";
-  if (label === "Down") return "Up";
-  if (label === "To sky") return "Toe touch";
-  if (label === "Toe touch") return "To sky";
+export function nextPositionFor(label: string, endpoints: readonly string[] = ["Up", "Down"]): string {
+  if (label === endpoints[0]) return endpoints[1] ?? "-";
+  if (label === endpoints[1]) return endpoints[0] ?? "-";
   return "-";
+}
+
+export function advanceRepetition(
+  progress: MotionProgress,
+  position: string,
+  endpoints: readonly [string, string],
+): MotionProgress {
+  if (!endpoints.includes(position)) return progress;
+  if (!progress.start) {
+    return { start: position, current: position, transitions: 0, repetitions: progress.repetitions, target: nextPositionFor(position, endpoints) };
+  }
+  if (progress.current === position) return progress;
+  const transitions = progress.transitions + 1;
+  const completed = position === progress.start && transitions >= 2;
+  return {
+    start: progress.start,
+    current: position,
+    transitions: completed ? 0 : transitions,
+    repetitions: progress.repetitions + (completed ? 1 : 0),
+    target: nextPositionFor(position, endpoints),
+  };
+}
+
+export function smoothProbabilities(history: Array<Record<string, number>>, classes: readonly string[]): Record<string, number> {
+  if (!history.length) return {};
+  return Object.fromEntries(classes.map((label) => [
+    label,
+    history.reduce((sum, item) => sum + (item[label] ?? 0), 0) / history.length,
+  ]));
+}
+
+export function predictionGuidance(valid: boolean, featureCoverage: number): string | null {
+  if (valid) return null;
+  return featureCoverage <= 0 ? "Show shoulders & hips" : "Keep full body visible";
 }
 
 function statusLabel(status: MonitorState["status"]): string {
@@ -28,170 +66,188 @@ function statusLabel(status: MonitorState["status"]): string {
 }
 
 function currentPosition(state: MonitorState): string {
-  return state.status === "running" ? state.label : statusLabel(state.status);
+  return state.status === "running" || state.status === "ready" ? state.label : statusLabel(state.status);
 }
 
-function loadScript(src: string): Promise<void> {
-  const existing = scriptLoads.get(src);
-  if (existing) return existing;
-  const load = new Promise<void>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.onload = () => resolve();
-    script.onerror = () => { scriptLoads.delete(src); reject(new Error(`Could not load ${src}`)); };
-    document.head.appendChild(script);
-  });
-  scriptLoads.set(src, load);
-  return load;
-}
+const initialState = (): MonitorState => ({
+  status: "idle",
+  label: "Waiting",
+  target: "-",
+  repetitions: 0,
+  accuracy: 0,
+});
 
 export function ExerciseMonitor({ exercise, children }: { exercise: Exercise; children?: ReactNode }) {
-  const boothRef = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<MonitorState>({ status: "idle", label: "Waiting", repetitions: 0, accuracy: 0 });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [state, setState] = useState<MonitorState>(initialState);
+  const classifier = exercise.classifier;
+  const lastRequestRef = useRef(0);
+  const requestInFlightRef = useRef(false);
+  const requestAbortRef = useRef<AbortController | null>(null);
+  const staleTimerRef = useRef<number | null>(null);
+  const historyRef = useRef<Array<Record<string, number>>>([]);
+  const candidateRef = useRef<{ label: string; since: number } | null>(null);
+  const confirmedRef = useRef<string | null>(null);
+  const progressRef = useRef<MotionProgress>({ start: null, current: null, transitions: 0, repetitions: 0, target: "-" });
+
+  const classLabels = useMemo(() => classifier?.endpoints.map((endpoint) => endpoint.classLabel) ?? [], [classifier]);
+  const displayLabels = useMemo(() => classifier?.endpoints.map((endpoint) => endpoint.displayLabel) as [string, string] | undefined, [classifier]);
+  const displayForClass = useMemo(() => new Map(classifier?.endpoints.map((endpoint) => [endpoint.classLabel, endpoint.displayLabel]) ?? []), [classifier]);
+
+  const clearPrediction = useCallback(() => {
+    historyRef.current = [];
+    candidateRef.current = null;
+    confirmedRef.current = null;
+    setState((current) => current.status === "error" ? current : {
+      ...current,
+      status: "ready",
+      label: "Camera ready",
+      target: "-",
+      accuracy: 0,
+      message: undefined,
+    });
+  }, []);
+
+  const showReadyLabel = useCallback((label: string) => {
+    setState((current) => {
+      if (current.status === "error") return current;
+      if (current.status === "ready" && current.label === label && current.target === "-" && current.accuracy === 0) return current;
+      return { ...current, status: "ready", label, target: "-", accuracy: 0, message: undefined };
+    });
+  }, []);
+
+  const refreshStaleTimer = useCallback(() => {
+    if (staleTimerRef.current !== null) window.clearTimeout(staleTimerRef.current);
+    staleTimerRef.current = window.setTimeout(clearPrediction, STALE_POSITION_MS);
+  }, [clearPrediction]);
+
+  const handlePoseResult = useCallback((result: PoseFrameResult) => {
+    if (!classifier || !displayLabels) return;
+    if (result.worldLandmarks.length !== 33) {
+      historyRef.current = [];
+      candidateRef.current = null;
+      confirmedRef.current = null;
+      showReadyLabel("Step into camera view");
+      refreshStaleTimer();
+      return;
+    }
+    const now = performance.now();
+    if (requestInFlightRef.current || now - lastRequestRef.current < PREDICTION_INTERVAL_MS) return;
+    lastRequestRef.current = now;
+    requestInFlightRef.current = true;
+    const controller = new AbortController();
+    requestAbortRef.current = controller;
+
+    void predictClassifier(classifier.modelId, result.worldLandmarks, controller.signal)
+      .then((prediction) => {
+        if (!prediction.valid) {
+          historyRef.current = [];
+          candidateRef.current = null;
+          confirmedRef.current = null;
+          showReadyLabel(predictionGuidance(prediction.valid, prediction.featureCoverage) ?? "Keep full body visible");
+          refreshStaleTimer();
+          return;
+        }
+        historyRef.current = [...historyRef.current.slice(-(HISTORY_SIZE - 1)), prediction.probabilities];
+        const smoothed = smoothProbabilities(historyRef.current, classLabels);
+        const winningClass = classLabels.reduce((winner, candidate) =>
+          (smoothed[candidate] ?? 0) > (smoothed[winner] ?? 0) ? candidate : winner,
+        classLabels[0]);
+        const confidence = smoothed[winningClass] ?? 0;
+        if (!winningClass || confidence < MIN_CONFIDENCE) {
+          candidateRef.current = null;
+          showReadyLabel("Hold an endpoint pose");
+          refreshStaleTimer();
+          return;
+        }
+
+        const displayLabel = displayForClass.get(winningClass);
+        if (!displayLabel) {
+          refreshStaleTimer();
+          return;
+        }
+        const observedAt = performance.now();
+        if (candidateRef.current?.label !== displayLabel) {
+          candidateRef.current = { label: displayLabel, since: observedAt };
+          showReadyLabel(`Hold ${displayLabel} steady`);
+        } else if (observedAt - candidateRef.current.since >= STABLE_POSITION_MS) {
+          if (confirmedRef.current !== displayLabel) {
+            confirmedRef.current = displayLabel;
+            progressRef.current = advanceRepetition(progressRef.current, displayLabel, displayLabels);
+          }
+          setState({
+            status: "running",
+            label: displayLabel,
+            target: progressRef.current.target,
+            repetitions: progressRef.current.repetitions,
+            accuracy: Math.round(confidence * 100),
+          });
+        }
+
+        refreshStaleTimer();
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setState((current) => ({ ...current, status: "error", message: error instanceof Error ? error.message : "Prediction failed" }));
+      })
+      .finally(() => {
+        if (requestAbortRef.current === controller) {
+          requestAbortRef.current = null;
+          requestInFlightRef.current = false;
+        }
+      });
+  }, [classLabels, classifier, displayForClass, displayLabels, refreshStaleTimer, showReadyLabel]);
+
+  const camera = usePoseCamera({ videoRef, canvasRef, onPoseResult: handlePoseResult });
 
   useEffect(() => {
-    let instance: any;
-    let stream: MediaStream | undefined;
-    let cancelled = false;
-    setState({ status: "loading", label: "Loading camera and model...", repetitions: 0, accuracy: 0 });
+    setState({ ...initialState(), status: "loading", label: "Loading camera and model..." });
+    progressRef.current = { start: null, current: null, transitions: 0, repetitions: 0, target: "-" };
+    historyRef.current = [];
+    candidateRef.current = null;
+    confirmedRef.current = null;
+    void camera.start();
+    return () => camera.stop();
+    // Camera start/stop is intentionally tied to the exercise identity only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exercise.id]);
 
-    const start = async () => {
-      try {
-        await loadScript("/vendor/p5.min.js");
-        await loadScript("/vendor/ml5.min.js");
-        if (cancelled || !boothRef.current) return;
-        instance = new window.p5((p: any) => {
-          let video: any;
-          let pose: any;
-          let skeleton: any[] = [];
-          let brain: any;
-          let oldPose = "";
-          let rep = 0;
-          let repTicks = 0;
-          let cycles = 0;
-          let classifyTimer: number | undefined;
+  useEffect(() => {
+    if (camera.status === "requesting-camera" || camera.status === "loading-model") {
+      setState((current) => ({ ...current, status: "loading", message: undefined }));
+    } else if (camera.status === "running") {
+      setState((current) => current.status === "running" ? current : { ...current, status: "ready", label: "Camera ready", message: undefined });
+    } else if (camera.status === "error") {
+      setState((current) => ({ ...current, status: "error", label: "Camera unavailable", message: camera.error?.message }));
+    }
+  }, [camera.error, camera.status]);
 
-          p.setup = () => {
-            p.createCanvas(640, 480).parent(boothRef.current);
-            video = p.createCapture(p.VIDEO);
-            const videoElement = video.elt as HTMLVideoElement | undefined;
-            if (videoElement) {
-              const source = videoElement.srcObject;
-              stream = source && "getTracks" in source ? source as MediaStream : undefined;
-              videoElement.addEventListener("loadedmetadata", () => {
-                const nextSource = videoElement.srcObject;
-                stream = nextSource && "getTracks" in nextSource ? nextSource as MediaStream : undefined;
-              }, { once: true });
-            }
-            video.size(640, 480);
-            video.hide();
-            window.ml5.poseNet(video, () => setState((current) => ({ ...current, status: "ready", label: "Camera ready" }))).on("pose", (poses: any[]) => {
-              if (poses.length) {
-                pose = poses[0].pose;
-                skeleton = poses[0].skeleton || [];
-              }
-            });
-            brain = window.ml5.neuralNetwork({ inputs: 34, outputs: 4, task: "classification", debug: false });
-            const base = exercise.model === "back" ? "/models/back/" : "/models/shoulder/";
-            brain.load({ model: `${base}model.json`, metadata: `${base}model_meta.json`, weights: `${base}model.weights.bin` }, () => classify());
-          };
-
-          const classify = () => {
-            if (cancelled) return;
-            if (!pose || !brain) { classifyTimer = window.setTimeout(classify, 100); return; }
-            const inputs = pose.keypoints.flatMap((keypoint: any) => [keypoint.position.x, keypoint.position.y]);
-            brain.classify(inputs, (_error: unknown, results: any[]) => {
-              const result = results?.[0];
-              if (result?.confidence > 0.75) {
-                const nextLabel = exercise.model === "back"
-                  ? (result.label.toUpperCase() === "U" ? "To sky" : "Toe touch")
-                  : (result.label.toUpperCase() === "U" ? "Up" : "Down");
-                const distance = p.dist(pose.leftShoulder.x, pose.leftShoulder.y, pose.leftWrist.x, pose.leftWrist.y);
-                const accuracy = exercise.model === "back"
-                  ? Math.round(result.confidence * 100)
-                  : Math.round(nextLabel === "Up" ? Math.min(100, distance) : Math.min(100, (distance * 100) / 170));
-                if (nextLabel !== oldPose) repTicks += 1;
-                if (repTicks > 15) {
-                  cycles += 1;
-                  repTicks = 0;
-                  if (cycles > 1 && cycles % 2 === 1) rep += 1;
-                  oldPose = nextLabel;
-                }
-                setState({ status: "running", label: nextLabel, repetitions: rep, accuracy });
-              }
-              classify();
-            });
-          };
-
-          p.draw = () => {
-            if (!video) return;
-            p.push();
-            p.translate(video.width, 0);
-            p.scale(-1, 1);
-            p.image(video, 0, 0, video.width, video.height);
-            if (pose) {
-              p.stroke(85, 216, 194, 210);
-              p.strokeWeight(3);
-              p.noFill();
-              skeleton.forEach((pair: any[]) => {
-                const first = pair?.[0]?.position;
-                const second = pair?.[1]?.position;
-                if (first && second) p.line(first.x, first.y, second.x, second.y);
-              });
-              p.fill(85, 216, 194);
-              p.noStroke();
-              [pose.rightWrist, pose.leftWrist, pose.rightShoulder, pose.leftShoulder].forEach((point: any) => p.ellipse(point.x, point.y, 20));
-              pose.keypoints.forEach((keypoint: any) => p.ellipse(keypoint.position.x, keypoint.position.y, 10));
-            }
-            p.pop();
-          };
-
-          p.remove = ((original) => (...args: any[]) => {
-            if (classifyTimer) window.clearTimeout(classifyTimer);
-            original(...args);
-          })(p.remove);
-        }, boothRef.current);
-      } catch (error) {
-        if (!cancelled) setState({ status: "error", label: "Camera unavailable", message: error instanceof Error ? error.message : "Could not start monitoring", repetitions: 0, accuracy: 0 });
-      }
-    };
-    void start();
-    return () => {
-      cancelled = true;
-      stream?.getTracks().forEach((track) => track.stop());
-      instance?.remove?.();
-    };
-  }, [exercise.model]);
+  useEffect(() => () => {
+    requestAbortRef.current?.abort();
+    if (staleTimerRef.current !== null) window.clearTimeout(staleTimerRef.current);
+  }, []);
 
   return (
     <div className="monitor-workspace">
       <div className="monitor-wrap">
-        <div ref={boothRef} className="monitor-canvas" aria-label="Live exercise camera view" />
+        <div className="monitor-canvas" aria-label="Live exercise camera view">
+          <video ref={videoRef} muted playsInline aria-hidden="true" />
+          <canvas ref={canvasRef} aria-hidden="true" />
+        </div>
       </div>
       <aside className="monitor-panel" aria-label="Live exercise metadata">
         {children}
         {state.message && <p className="monitor-error">{state.message}</p>}
         <div className="monitor-panel-header">
-          <span className="camera-ready"><span className="status-dot ready" /> Private on-device session</span>
+          <span className="camera-ready"><span className="status-dot ready" /> Private local session</span>
           <span className="monitor-live-state" aria-live="polite"><span className={`status-dot ${state.status}`} /> {statusLabel(state.status)}</span>
         </div>
         <div className="monitor-summary" aria-label="Exercise progress">
-          <div className="monitor-metric monitor-metric-current">
-            <span className="monitor-metric-label">Current position</span>
-            <strong>{currentPosition(state)}</strong>
-          </div>
-          <div className="monitor-metric monitor-metric-next">
-            <span className="monitor-metric-label">Next position</span>
-            <strong>{state.status === "running" ? nextPositionFor(state.label) : "-"}</strong>
-          </div>
-          <div className="monitor-metric monitor-metric-accuracy">
-            <span className="monitor-metric-label">Accuracy</span>
-            <strong>{state.status === "running" ? `${state.accuracy}%` : "-"}</strong>
-          </div>
-          <div className="monitor-metric monitor-metric-repetitions">
-            <span className="monitor-metric-label">Repetitions</span>
-            <strong>{state.repetitions}</strong>
-          </div>
+          <div className="monitor-metric monitor-metric-current"><span className="monitor-metric-label">Current position</span><strong>{currentPosition(state)}</strong></div>
+          <div className="monitor-metric monitor-metric-next"><span className="monitor-metric-label">Next position</span><strong>{state.status === "running" ? state.target : "-"}</strong></div>
+          <div className="monitor-metric monitor-metric-accuracy"><span className="monitor-metric-label">Accuracy</span><strong>{state.status === "running" ? `${state.accuracy}%` : "-"}</strong></div>
+          <div className="monitor-metric monitor-metric-repetitions"><span className="monitor-metric-label">Repetitions</span><strong>{state.repetitions}</strong></div>
         </div>
       </aside>
     </div>

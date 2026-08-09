@@ -17,9 +17,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .config import ROOT_DIR, UPLOAD_PATH
+from .classifier_runtime import ClassifierRegistry
 from .db import Profile, User, get_db, init_db
 from .schemas import (
     AuthResponse,
+    ClassifierPredictionRequest,
     CsrfResponse,
     HealthResponse,
     LoginRequest,
@@ -44,6 +46,7 @@ from .security import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("physio")
 password_hash = PasswordHash.recommended()
+classifier_registry = ClassifierRegistry(ROOT_DIR / "artifacts" / "classifiers")
 
 @asynccontextmanager
 async def lifespan(_application: FastAPI):
@@ -260,9 +263,29 @@ def delete_profile_image(request: Request, user: User = Depends(current_user), d
     return profile_response(user, profile)
 
 
+@app.post("/api/classifiers/{model_id}/predict")
+def predict_classifier(
+    model_id: str,
+    payload: ClassifierPredictionRequest,
+    request: Request,
+    _user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    require_csrf(request, db)
+    try:
+        return classifier_registry.predict(
+            model_id,
+            [landmark.model_dump() for landmark in payload.world_landmarks],
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Classifier model is not available") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 FRONTEND_DIST = ROOT_DIR.parent / "frontend" / "dist"
 if FRONTEND_DIST.exists():
-    for directory_name in ("assets", "vendor", "models"):
+    for directory_name in ("assets", "mediapipe"):
         directory = FRONTEND_DIST / directory_name
         if directory.exists():
             app.mount(f"/{directory_name}", StaticFiles(directory=directory), name=directory_name)
