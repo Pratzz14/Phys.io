@@ -273,8 +273,8 @@ dt { color: var(--muted); font-size: 12px; } dd { margin: 0; color: var(--text);
 .auth-visual-copy { position: relative; z-index: 2; max-width: 480px; margin-top: 118px; }
 .auth-visual-copy h2 { margin-bottom: 12px; font-size: clamp(36px, 4vw, 56px); }
 .auth-visual-copy p:last-child { max-width: 390px; margin: 0; color: var(--muted); line-height: 1.55; }
-.auth-pose { position: absolute; top: 57%; left: 50%; width: min(360px, 45%); aspect-ratio: 1; transform: translate(-50%, -10%); display: grid; place-items: center; color: var(--mint); }
-.auth-pose .pose-svg { width: 70%; }
+.auth-pose { position: absolute; right: clamp(36px, 5vw, 72px); bottom: clamp(56px, 8vh, 82px); width: min(320px, 36%); aspect-ratio: 1; display: grid; place-items: center; color: var(--mint); }
+.auth-pose .pose-svg { width: 70%; height: auto; }
 .auth-privacy { position: absolute; z-index: 2; bottom: 48px; left: 54px; display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
 .auth-privacy svg { color: var(--mint); }
 .auth-panel { align-self: center; width: min(520px, calc(100% - 96px)); justify-self: center; padding: 54px 0; }
