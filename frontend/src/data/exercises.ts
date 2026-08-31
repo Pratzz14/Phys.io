@@ -38,7 +38,7 @@ export const exercises: Exercise[] = [
     area: "Neck",
     accent: "blue",
     mode: "guidance",
-    videoUrl: "https://www.youtube.com/embed/iwPsbH5yFc4",
+    youtubeVideoId: "iwPsbH5yFc4",
     guidance: {
       intro: "Move through a small, comfortable range. Keep your shoulders relaxed and return to center between sides.",
       frames: [{ pose: "standing" }, { pose: "neck" }, { pose: "standing" }, { pose: "neck", mirrored: true }, { pose: "standing" }],
@@ -61,7 +61,7 @@ export const exercises: Exercise[] = [
     area: "Elbow",
     accent: "lavender",
     mode: "guidance",
-    videoUrl: "https://www.youtube.com/embed/Lf695_IJO8g",
+    youtubeVideoId: "Lf695_IJO8g",
     guidance: {
       intro: "Keep your upper arm steady while the elbow bends and straightens through a comfortable range.",
       frames: [{ pose: "standing" }, { pose: "elbow" }, { pose: "standing" }, { pose: "elbow" }, { pose: "standing" }],
@@ -84,7 +84,7 @@ export const exercises: Exercise[] = [
     area: "Knee",
     accent: "sand",
     mode: "guidance",
-    videoUrl: "https://www.youtube.com/embed/pOrc3zADC7k",
+    youtubeVideoId: "pOrc3zADC7k",
     guidance: {
       intro: "Practice a shallow, controlled knee bend with steady feet and a stable support within reach.",
       frames: [{ pose: "standing" }, { pose: "knee" }, { pose: "standing" }, { pose: "knee", mirrored: true }, { pose: "standing" }],
@@ -107,7 +107,7 @@ export const exercises: Exercise[] = [
     area: "Ankle",
     accent: "sage",
     mode: "guidance",
-    videoUrl: "https://www.youtube.com/embed/hEmLp6iQB7M",
+    youtubeVideoId: "hEmLp6iQB7M",
     guidance: {
       intro: "Use a stable support while you shift weight and lift one foot with control.",
       frames: [{ pose: "standing" }, { pose: "ankle" }, { pose: "standing" }, { pose: "ankle", mirrored: true }, { pose: "standing" }],

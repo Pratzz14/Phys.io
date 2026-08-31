@@ -1,7 +1,8 @@
 import { Link, usePath } from "../router";
 import { ExerciseMonitor } from "../components/ExerciseMonitor";
+import { GuidedExerciseVideo } from "../components/GuidedExerciseVideo";
 import { exercises } from "../data/exercises";
-import { BackIcon, BookIcon, CheckIcon, ClipboardIcon, PlayIcon } from "../components/Icons";
+import { BackIcon, BookIcon, CheckIcon, ClipboardIcon } from "../components/Icons";
 import { PoseSequence } from "../components/MovementVisual";
 
 export function ExercisePage() {
@@ -39,12 +40,11 @@ export function ExercisePage() {
       <div className="exercise-layout">
         <section className="live-card surface-panel">
           <div className="section-heading-title"><BookIcon size={22} /><div><p className="eyebrow">Guidance only</p><h2>{exercise.area} practice</h2></div></div>
-          <div className="guidance-panel"><p>{guidance.intro} No camera data is collected.</p><PoseSequence frames={guidance.frames} /><div className="guidance-steps">{guidance.steps.map((step, index) => <div key={step.title}><span>{index + 1}</span><strong>{step.title}</strong><p>{step.description}</p></div>)}</div></div>
+          <div className="guidance-panel"><p>{guidance.intro} No camera data is collected.</p>{exercise.youtubeVideoId ? <GuidedExerciseVideo key={exercise.id} exerciseTitle={exercise.title} videoId={exercise.youtubeVideoId} /> : null}<PoseSequence frames={guidance.frames} /><div className="guidance-steps">{guidance.steps.map((step, index) => <div key={step.title}><span>{index + 1}</span><strong>{step.title}</strong><p>{step.description}</p></div>)}</div></div>
         </section>
         <aside className="exercise-aside surface-panel">
           <div className="section-heading-title"><ClipboardIcon size={22} /><h2>Before you begin</h2></div>
           <ol>{guidance.checklist.map((item) => <li key={item}><CheckIcon size={18} /><span>{item}</span></li>)}</ol>
-          {exercise.videoUrl && <div className="video-note"><span>Reference video</span><a href={exercise.videoUrl} target="_blank" rel="noreferrer"><PlayIcon size={18} /> Open exercise guidance</a></div>}
         </aside>
       </div>
     </div>

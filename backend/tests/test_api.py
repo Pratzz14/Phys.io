@@ -146,7 +146,9 @@ def test_security_headers_are_present(client: TestClient) -> None:
     response = client.get("/api/health")
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["x-frame-options"] == "DENY"
-    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+    content_security_policy = response.headers["content-security-policy"]
+    assert "frame-src https://www.youtube-nocookie.com" in content_security_policy
+    assert "frame-ancestors 'none'" in content_security_policy
 
 
 def _world_landmarks() -> list[dict[str, float]]:

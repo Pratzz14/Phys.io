@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { AuthProvider } from "./auth/AuthProvider";
 import { App } from "./App";
 import { Router } from "./router";
@@ -82,11 +83,27 @@ test("keeps setup guidance for guidance-only exercises", () => {
   window.history.pushState({}, "", "/exercise/neck-release");
   render(<Router><ExercisePage /></Router>);
   expect(screen.getByRole("heading", { name: /before you begin/i })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /play guided video/i })).toBeInTheDocument();
+  expect(screen.queryByTitle(/guided exercise video/i)).not.toBeInTheDocument();
+});
+
+test("loads a privacy-enhanced guided video only after activation", async () => {
+  const user = userEvent.setup();
+  window.history.pushState({}, "", "/exercise/neck-release");
+  render(<Router><ExercisePage /></Router>);
+
+  await user.click(screen.getByRole("button", { name: /play guided video/i }));
+
+  const frame = screen.getByTitle("Neck release guided exercise video");
+  expect(frame).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/iwPsbH5yFc4?autoplay=1&rel=0");
+  expect(frame).toHaveAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+  expect(screen.getByRole("link", { name: /open on youtube/i })).toHaveAttribute("href", "https://www.youtube.com/watch?v=iwPsbH5yFc4");
 });
 
 test("provides distinct guidance for every guidance-only exercise", () => {
   const guided = exercises.filter((exercise) => exercise.mode === "guidance");
   expect(guided.every((exercise) => exercise.guidance)).toBe(true);
+  expect(guided.every((exercise) => exercise.youtubeVideoId)).toBe(true);
   expect(new Set(guided.map((exercise) => exercise.guidance?.intro)).size).toBe(guided.length);
 
   window.history.pushState({}, "", "/exercise/knee-control");

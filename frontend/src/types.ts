@@ -53,7 +53,7 @@ export interface Exercise {
   accent: string;
   mode: "live" | "guidance";
   classifier?: ExerciseClassifier;
-  videoUrl?: string;
+  youtubeVideoId?: string;
   guidance?: ExerciseGuidance;
 }
 
